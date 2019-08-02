@@ -30,7 +30,7 @@ namespace My.App.Job
             string nowIp = HttpHelper.GetResponseString(getIpUrl).Trim();
             string ipCacheKey = "My.App.Job.IpPush.LastIp";
             string oldIp = RedisHelper.Get<string>(ipCacheKey);
-            Console.WriteLine($"{DateTime.Now.ToString()}：{oldIp}");
+            // Console.WriteLine($"{DateTime.Now.ToString("yyyyMMddHHmmssfff")}：{oldIp}");
             if (nowIp == oldIp)
             {
                 Console.WriteLine($"IP 【{nowIp}】未变更，无需通知");
