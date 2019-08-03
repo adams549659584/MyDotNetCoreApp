@@ -1,0 +1,16 @@
+version: '2'
+services:
+  dotnetcore-mytest:
+    image: dotnetcore-mytest
+    container_name: dotnetcore-mytest
+    build: .
+    networks:
+      - dotnetcore_app
+    external_links:
+      - redis:dotnetcore_redis
+    volumes:
+      - /volume2/docker/dotnet/MyDotNetCoreApp/MyTest/Logs:/app/Logs
+
+networks:
+  dotnetcore_app:
+    external: true

@@ -17,6 +17,11 @@ RUN dotnet publish -c Release -o out
 FROM mcr.microsoft.com/dotnet/core/runtime:3.0.0-preview7-alpine3.9
 WORKDIR /app
 COPY --from=build-env /app/MyDotNetCoreApp/My.App.Job/out ./
+VOLUME /app/Logs /app/Logs
+# 设置时区为上海
+RUN apk add tzdata && cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
+    && echo "Asia/Shanghai" > /etc/timezone \
+    && apk del tzdata
 ENTRYPOINT ["dotnet", "My.App.Job.dll"]
 
 # docker build -t dotnetcore-myjob .
