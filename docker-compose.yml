@@ -1,16 +1,18 @@
 version: '2'
 services:
-  dotnetcore-mytest:
-    image: dotnetcore-mytest
-    container_name: dotnetcore-mytest
+  dotnetcore-myjob:
+    image: dotnetcore-myjob
+    container_name: dotnetcore-myjob
     build: .
     networks:
       - dotnetcore_app
     external_links:
       - redis:dotnetcore_redis
     volumes:
-      - /volume2/docker/dotnet/MyDotNetCoreApp/MyTest/Logs:/app/Logs
+      - /volume2/docker/dotnet/MyDotNetCoreApp/MyJob/Logs:/app/Logs
 
 networks:
   dotnetcore_app:
     external: true
+
+# docker-compose build --no-cache
