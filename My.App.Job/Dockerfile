@@ -19,7 +19,7 @@ WORKDIR /app
 COPY --from=build-env /app/MyDotNetCoreApp/My.App.Job/out ./
 VOLUME /app/Logs /app/Logs
 # 设置时区为上海
-RUN apk add tzdata && cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
+RUN apk add --no-cache bash && apk add tzdata && cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
     && echo "Asia/Shanghai" > /etc/timezone \
     && apk del tzdata
 ENTRYPOINT ["dotnet", "My.App.Job.dll"]
