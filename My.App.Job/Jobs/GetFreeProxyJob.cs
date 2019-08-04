@@ -99,6 +99,7 @@ namespace My.App.Job
                 {
                     Console.WriteLine($"抓取免费IP代理作业开始抓取ihuan第{nextPage}页:");
                     FreeProxy01(href, nextPage);
+                    return;
                 }
             }
             Console.WriteLine($"抓取免费IP代理作业抓取ihuan结束");
