@@ -3,6 +3,7 @@ services:
   dotnetcore-myjob:
     image: dotnetcore-myjob
     container_name: dotnetcore-myjob
+    restart: always
     build: .
     networks:
       - dotnetcore_app

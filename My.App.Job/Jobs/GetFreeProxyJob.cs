@@ -55,6 +55,11 @@ namespace My.App.Job
                 return;
             }
             var headerStrs = ReadAllLines(headerFilePath);
+            Console.WriteLine("ihuan_header内容如下:");
+            foreach (var headerStr in headerStrs)
+            {
+                Console.WriteLine(headerStr);
+            }
             var dictHeaders = headerStrs.Select(h => h.Split(new string[] { ": " }, StringSplitOptions.RemoveEmptyEntries)).ToDictionary(x => x[0], x => x[1]);
             string ipHtml = HttpHelper.GetResponseString(getIpUrl, dictHeaders);
             var htmlDoc = new HtmlDocument();
