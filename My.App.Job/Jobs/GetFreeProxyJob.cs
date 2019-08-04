@@ -47,7 +47,7 @@ namespace My.App.Job
         void FreeProxy01(string urlParams = "", int page = 1)
         {
             string getIpUrl = $"https://ip.ihuan.me{urlParams}";
-            string headerFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config\\ihuan_header.txt");
+            string headerFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config", "ihuan_header.txt");
             var fileLastWriteTime = File.GetLastWriteTime(headerFilePath);
             if (HeaderFileIsExpried && fileLastWriteTime <= HeaderFileLastWriteTime)
             {
