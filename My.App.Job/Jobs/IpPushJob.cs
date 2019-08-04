@@ -31,13 +31,14 @@ namespace My.App.Job
             string ipCacheKey = "My.App.Job.IpPush.LastIp";
             string oldIp = RedisHelper.Get<string>(ipCacheKey);
             // Console.WriteLine($"{DateTime.Now.ToString("yyyyMMddHHmmssfff")}：{oldIp}");
+            // 每次设置下，不然缓存过期了就推送了
+            RedisHelper.Set(ipCacheKey, nowIp, 60);
             if (nowIp == oldIp)
             {
                 Console.WriteLine($"IP 【{nowIp}】未变更，无需通知");
             }
             else
             {
-                RedisHelper.Set(ipCacheKey, nowIp, 60 * 24);
                 string notifyTitle = "Ip变更通知";
                 string notifyBody = $"您的外网ip变更为{nowIp}了";
                 Console.WriteLine(notifyBody);
