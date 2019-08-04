@@ -15,4 +15,10 @@
     <ProjectReference Include="..\My.App.Core\My.App.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Config\ihuan_header.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
