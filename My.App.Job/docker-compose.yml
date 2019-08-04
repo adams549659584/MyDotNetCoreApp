@@ -10,6 +10,7 @@ services:
       - redis:dotnetcore_redis
     volumes:
       - /volume2/docker/dotnet/MyDotNetCoreApp/MyJob/Logs:/app/Logs
+      - /volume2/docker/dotnet/MyDotNetCoreApp/MyJob/Config:/app/Config
 
 networks:
   dotnetcore_app:
