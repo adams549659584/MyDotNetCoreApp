@@ -35,13 +35,13 @@ namespace My.App.Job
             RedisHelper.Set(ipCacheKey, nowIp, 60);
             if (nowIp == oldIp)
             {
-                Console.WriteLine($"IP 【{nowIp}】未变更，无需通知");
+                Console.WriteLine($"IpPushJob：IP 【{nowIp}】未变更，无需通知");
             }
             else
             {
                 string notifyTitle = "Ip变更通知";
                 string notifyBody = $"您的外网ip变更为{nowIp}了";
-                Console.WriteLine(notifyBody);
+                Console.WriteLine($"IpPushJob：{notifyBody}");
                 NotifyHelper.Weixin(notifyTitle, notifyBody);
             }
         }

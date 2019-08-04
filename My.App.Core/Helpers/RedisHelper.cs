@@ -76,6 +76,10 @@ namespace My.App.Core
                 throw new ArgumentNullException("过期时间不能为空");
             return this.cacheClient.Set<object>(key, value, expiresIn);
         }
+        public bool Set(string hashId, string key, string value)
+        {
+            return this.redisClient.SetEntryInHash(hashId, key, value);
+        }
         public long TTL(string key)
         {
             return this.redisClient.Ttl(key);

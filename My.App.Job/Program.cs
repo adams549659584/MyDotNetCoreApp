@@ -19,6 +19,7 @@ namespace My.App.Job
                    //注册后台THostedService类型服务
                    //services.AddHostedService<TestJob>();
                    services.AddHostedService<IpPushJob>();
+                   services.AddHostedService<GetFreeProxyJob>();
                });
     }
 }

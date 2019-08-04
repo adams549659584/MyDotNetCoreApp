@@ -96,10 +96,14 @@ namespace My.App.Core
             sbLog.AppendFormat("日志源函数:{0}\r\n", method);
             sbLog.AppendFormat("日志源行数:{0}\r\n", line);
             sbLog.AppendFormat("日志源信息:{0}\r\n\r\n", log);
-#if DEBUG
-            Console.WriteLine(sbLog.ToString());
+
+            var logStr = sbLog.ToString();
+            WriteLog(logStr, fileName);
+#if (DEBUG)
+            Console.WriteLine(logStr);
+#else
+            NotifyHelper.Weixin("MyDotNetCoreApp系统日志通知", logStr.Replace("\r\n", "     \r\n"));
 #endif
-            WriteLog(sbLog.ToString(), fileName);
         }
 
         private static void TaskLog(Exception ex, string fileName, [CallerFilePath]string path = null, [CallerMemberName]string method = null, [CallerLineNumber]int line = 0)

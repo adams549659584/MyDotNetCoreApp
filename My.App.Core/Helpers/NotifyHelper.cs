@@ -11,7 +11,7 @@ namespace My.App.Core
         /// 通知到微信
         /// </summary>
         /// <param name="title">消息标题，最长为256，必填</param>
-        /// <param name="body">消息内容，最长64Kb，可空，支持MarkDown。</param>
+        /// <param name="body">消息内容，最长64Kb，可空，支持MarkDown。可用"     \r\n"换行等等</param>
         /// <returns></returns>
         public static bool Weixin(string title, string body = "")
         {
