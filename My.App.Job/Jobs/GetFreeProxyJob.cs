@@ -120,6 +120,10 @@ namespace My.App.Job
             {
                 return File.ReadAllLines(path);
             }
+            else
+            {
+                Console.WriteLine($"文件【{path}】不存在");
+            }
             return new string[0];
         }
     }
