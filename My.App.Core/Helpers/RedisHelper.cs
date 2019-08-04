@@ -60,6 +60,11 @@ namespace My.App.Core
             return this.cacheClient.GetAll<T>((IEnumerable<string>)keys);
         }
 
+        public Dictionary<string, string> GetAllEntriesFromHash(string hashId)
+        {
+            return this.redisClient.GetAllEntriesFromHash(hashId);
+        }
+
         public T Get<T>(string key) where T : class
         {
             return this.cacheClient.Get<T>(this.GetKey(key));

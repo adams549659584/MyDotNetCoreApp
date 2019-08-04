@@ -8,6 +8,7 @@ using My.App.Core;
 using Newtonsoft.Json;
 using System.Linq;
 using System.IO;
+using System.Net;
 
 namespace My.App.Job
 {
@@ -56,7 +57,9 @@ namespace My.App.Job
             }
             var headerStrs = ReadAllLines(headerFilePath);
             var dictHeaders = headerStrs.Select(h => h.Split(new string[] { ": " }, StringSplitOptions.RemoveEmptyEntries)).ToDictionary(x => x[0], x => x[1]);
-            string ipHtml = HttpHelper.GetResponseString(getIpUrl, dictHeaders);
+            var dictProxyIps = RedisHelper.GetAllEntriesFromHash(IpProxyCacheKey);
+            var dictProxyIp = dictProxyIps.FirstOrDefault(d => d.Value == "0");
+            string ipHtml = HttpHelper.GetResponseString(getIpUrl, dictHeaders, 10, new WebProxy($"http://{dictProxyIp.Key}"));
             var htmlDoc = new HtmlDocument();
             htmlDoc.LoadHtml(ipHtml);
             var ipTrs = htmlDoc.DocumentNode.SelectNodes("//div[2]//div[2]//table//tbody//tr");

@@ -1,17 +1,34 @@
 version: '2'
 services:
   dotnetcore-myjob:
+    # 镜像名称
     image: dotnetcore-myjob
+    # 容器名称
     container_name: dotnetcore-myjob
+    # 自启动
     restart: always
-    build: .
+    # 设置日志文件格式及大小
+    logging:
+      # driver: "json-file"
+      options:
+        max-size: "100m"
+    # 设定上下文根目录，然后以该目录为准指定 Dockerfile，赋值Dockerfile 中的 ARG 指令
+    build: 
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - SdkImageName=mcr.microsoft.com/dotnet/core/sdk:3.0.100-preview7-alpine3.9
+        - RunTimeImageName=mcr.microsoft.com/dotnet/core/runtime:3.0.0-preview7-alpine3.9
+    # 加入指定网络
     networks:
       - dotnetcore_app
+    # 链接到 docker-compose.yml 外部的容器，甚至 并非 Compose 项目文件管理的容器（前提是外部容器中必须至少有一个容器是连接到与项目内的服务的同一个网络里面）
     external_links:
       - redis:dotnetcore_redis
+    # 以 Compose 配置文件为中心的相对路径作为数据卷挂载到容器。
     volumes:
-      - /volume2/docker/dotnet/MyDotNetCoreApp/MyJob/Logs:/app/Logs
-      - /volume2/docker/dotnet/MyDotNetCoreApp/MyJob/Config:/app/Config
+      - ./Logs:/app/Logs
+      - ./Config:/app/Config
 
 networks:
   dotnetcore_app:

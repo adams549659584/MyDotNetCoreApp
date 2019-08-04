@@ -1,4 +1,7 @@
-FROM mcr.microsoft.com/dotnet/core/sdk:3.0.100-preview7-alpine3.9 AS build-env
+ARG SdkImageName
+ARG RunTimeImageName
+
+FROM ${SdkImageName} AS build-env
 WORKDIR /app
 
 # 安装git
@@ -14,20 +17,12 @@ WORKDIR /app/MyDotNetCoreApp/My.App.Job
 RUN dotnet publish -c Release -o out
 
 # build runtime image
-FROM mcr.microsoft.com/dotnet/core/runtime:3.0.0-preview7-alpine3.9
+FROM ${RunTimeImageName}
 WORKDIR /app
 COPY --from=build-env /app/MyDotNetCoreApp/My.App.Job/out ./
 VOLUME /app/Logs /app/Logs
-# 设置时区为上海
+# 安装bash，设置时区为上海
 RUN apk add --no-cache bash && apk add tzdata && cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
     && echo "Asia/Shanghai" > /etc/timezone \
     && apk del tzdata
 ENTRYPOINT ["dotnet", "My.App.Job.dll"]
-
-# docker build -t dotnetcore-myjob .
-
-# dotnet publish -c Release -o app
-# FROM mcr.microsoft.com/dotnet/core/runtime:3.0.0-preview7-alpine3.9
-# WORKDIR /app
-# COPY /app ./
-# ENTRYPOINT ["dotnet", "My.App.Job.dll"]
