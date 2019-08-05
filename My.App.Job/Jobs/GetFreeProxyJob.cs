@@ -47,6 +47,7 @@ namespace My.App.Job
         {
             //base.Logger.Log(LogLevel.Debug, "测试作业执行：");
             //LogHelper.Log("抓取免费IP代理作业执行：");
+            RawProxyIps.Clear();
             var task01 = Task.Run(() => FreeProxy01());
             var task02 =Task.Run(() => FreeProxy02());
             Task.WaitAll(task01, task02);
@@ -298,6 +299,7 @@ namespace My.App.Job
                             if (resultIp.Contains("origin"))
                             {
                                 RedisHelper.Set(IpProxyCacheKey, proxyIp, "0");
+                                RawProxyIps.Remove(proxyIp); 
                                 Console.WriteLine($"代理IP：{proxyIp} 通过校验");
                                 break;
                             }
