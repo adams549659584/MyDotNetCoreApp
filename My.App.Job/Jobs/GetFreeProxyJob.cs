@@ -163,7 +163,7 @@ namespace My.App.Job
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
+                LogHelper.Log(ex);
             }
         }
 
@@ -277,7 +277,7 @@ namespace My.App.Job
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
+                LogHelper.Log(ex);
             }
         }
 
