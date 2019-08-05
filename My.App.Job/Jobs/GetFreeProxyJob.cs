@@ -9,6 +9,7 @@ using Newtonsoft.Json;
 using System.Linq;
 using System.IO;
 using System.Net;
+using System.Threading.Tasks;
 
 namespace My.App.Job
 {
@@ -28,6 +29,14 @@ namespace My.App.Job
         /// </summary>
         private static Dictionary<string,bool> HeaderFilesIsExpried = new Dictionary<string, bool>();
 
+        /// <summary>
+        /// 暂存ip
+        /// </summary>
+        /// <typeparam name="string">ip</typeparam>
+        /// <typeparam name="bool">随便</typeparam>
+        /// <returns></returns>
+        private static Dictionary<string,bool> RawProxyIps = new Dictionary<string, bool>();
+
         public GetFreeProxyJob(ILogger<BaseJob> logger, IHostApplicationLifetime appLifetime) : base(JobTimerInterval, logger, appLifetime)
         {
             //base.Logger.Log(LogLevel.Debug, "测试作业启动");
@@ -38,8 +47,10 @@ namespace My.App.Job
         {
             //base.Logger.Log(LogLevel.Debug, "测试作业执行：");
             //LogHelper.Log("抓取免费IP代理作业执行：");
-            FreeProxy01();
-            FreeProxy02();
+            var task01 = Task.Run(() => FreeProxy01());
+            var task02 =Task.Run(() => FreeProxy02());
+            Task.WaitAll(task01, task02);
+            ValidProxyIps();
         }
 
         /// <summary>
@@ -113,7 +124,8 @@ namespace My.App.Job
                     var ip = item.SelectSingleNode($"{item.XPath}//td[1]//a").InnerText;
                     var port = item.SelectSingleNode($"{item.XPath}//td[2]").InnerText;
                     Console.WriteLine($"抓取免费IP代理作业 ihuan 抓取到IP:{ip}:{port}");
-                    RedisHelper.Set(IpProxyCacheKey, $"{ip}:{port}", "1");
+                    // RedisHelper.Set(IpProxyCacheKey, $"{ip}:{port}", "1");
+                    RawProxyIps[$"{ip}:{port}"] = false;
                 }
                 catch (Exception ex)
                 {
@@ -223,7 +235,8 @@ namespace My.App.Job
                     var ip = item.SelectSingleNode($"{item.XPath}//td[1]").InnerText.Trim();
                     var port = item.SelectSingleNode($"{item.XPath}//td[2]").InnerText.Trim();
                     Console.WriteLine($"抓取免费IP代理作业 89ip 抓取到IP:{ip}:{port}");
-                    RedisHelper.Set(IpProxyCacheKey, $"{ip}:{port}", "1");
+                    // RedisHelper.Set(IpProxyCacheKey, $"{ip}:{port}", "1");
+                    RawProxyIps[$"{ip}:{port}"] = false;
                 }
                 catch (Exception ex)
                 {
@@ -264,6 +277,39 @@ namespace My.App.Job
                 Console.WriteLine($"文件【{path}】不存在");
             }
             return new string[0];
+        }
+        
+        /// <summary>
+        /// 校验代理ip是否可用，可用的放进ip池
+        /// </summary>
+        void ValidProxyIps()
+        {
+            if (RawProxyIps.Count > 0)
+            {
+                string checkUrl = "http://httpbin.org/ip";
+                foreach (var proxyIp in RawProxyIps.Keys)
+                {
+                    try
+                    {
+                        var ipResponse = HttpHelper.GetResponse(checkUrl, null, 5, new WebProxy($"http://{proxyIp}"));
+                        if (ipResponse.StatusCode == HttpStatusCode.OK)
+                        {
+                            var resultIp = ipResponse.Content.ReadAsStringAsync().Result;
+                            if (resultIp.Contains("origin"))
+                            {
+                                RedisHelper.Set(IpProxyCacheKey, proxyIp, "0");
+                                Console.WriteLine($"代理IP：{proxyIp} 通过校验");
+                                break;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.ToString());
+                    }
+                    Console.WriteLine($"代理IP：{proxyIp} 未通过校验");
+                }
+            }
         }
     }
 
