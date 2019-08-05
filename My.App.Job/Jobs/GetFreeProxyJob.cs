@@ -14,7 +14,7 @@ namespace My.App.Job
 {
     public class GetFreeProxyJob : BaseJob
     {
-        private static TimeSpan JobTimerInterval = TimeSpan.FromMinutes(60);
+        private static TimeSpan JobTimerInterval = TimeSpan.FromMinutes(20);
         private static RedisHelper RedisHelper = new RedisHelper("dotnetcore_redis:6379");
         private static string IpProxyCacheKey = "useful_proxy";
 
@@ -45,7 +45,7 @@ namespace My.App.Job
         /// <summary>
         /// https://ip.ihuan.me
         /// </summary>
-        void FreeProxy01(string urlParams = "", int page = 1)
+        void FreeProxy01(string urlParams = "", int page = 1, string usableProxyIp = "")
         {
             string getIpUrl = $"https://ip.ihuan.me{urlParams}";
             string headerFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config", "ihuan_header.txt");
@@ -58,8 +58,33 @@ namespace My.App.Job
             var headerStrs = ReadAllLines(headerFilePath);
             var dictHeaders = headerStrs.Select(h => h.Split(new string[] { ": " }, StringSplitOptions.RemoveEmptyEntries)).ToDictionary(x => x[0], x => x[1]);
             var dictProxyIps = RedisHelper.GetAllEntriesFromHash(IpProxyCacheKey);
-            var dictProxyIp = dictProxyIps.FirstOrDefault(d => d.Value == "0");
-            string ipHtml = HttpHelper.GetResponseString(getIpUrl, dictHeaders, 10, new WebProxy($"http://{dictProxyIp.Key}"));
+            var proxyIps = dictProxyIps.Where(d => d.Value == "0").Select(x => x.Key).ToList();
+            if (!string.IsNullOrWhiteSpace(usableProxyIp))
+            {
+                var usableProxyIps = new List<string>() { usableProxyIp };
+                proxyIps.RemoveAll(x => x == usableProxyIp);
+                usableProxyIps.AddRange(proxyIps);
+                proxyIps = usableProxyIps;
+            }
+            string ipHtml = string.Empty;
+            foreach (var currProxyIp in proxyIps)
+            {
+                try
+                {
+                    Console.WriteLine($"抓取免费IP代理作业当前使用代理Ip：{currProxyIp}");
+                    var ipResponse = HttpHelper.GetResponse(getIpUrl, dictHeaders, 10, new WebProxy($"http://{currProxyIp}"));
+                    if (ipResponse.StatusCode == HttpStatusCode.OK)
+                    {
+                        ipHtml = ipResponse.Content.ReadAsStringAsync().Result;
+                        usableProxyIp = currProxyIp;
+                        break;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogHelper.Log(ex);
+                }
+            }
             var htmlDoc = new HtmlDocument();
             htmlDoc.LoadHtml(ipHtml);
             var ipTrs = htmlDoc.DocumentNode.SelectNodes("//div[2]//div[2]//table//tbody//tr");
@@ -101,7 +126,7 @@ namespace My.App.Job
                 if (nextPage > 0)
                 {
                     Console.WriteLine($"抓取免费IP代理作业开始抓取ihuan第{nextPage}页:");
-                    FreeProxy01(href, nextPage);
+                    FreeProxy01(href, nextPage, usableProxyIp);
                     return;
                 }
             }
