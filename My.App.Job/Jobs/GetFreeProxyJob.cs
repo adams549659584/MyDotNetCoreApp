@@ -82,7 +82,8 @@ namespace My.App.Job
                 }
                 catch (Exception ex)
                 {
-                    LogHelper.Log(ex);
+                    Console.WriteLine(ex.ToString());
+                    // LogHelper.Log(ex);
                 }
             }
             var htmlDoc = new HtmlDocument();
