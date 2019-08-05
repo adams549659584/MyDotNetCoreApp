@@ -15,7 +15,7 @@ namespace My.App.Job
 {
     public class GetFreeProxyJob : BaseJob
     {
-        private static TimeSpan JobTimerInterval = TimeSpan.FromMinutes(30);
+        private static TimeSpan JobTimerInterval = TimeSpan.FromMinutes(60);
         private static RedisHelper RedisHelper = new RedisHelper("dotnetcore_redis:6379");
         private static string IpProxyCacheKey = "useful_proxy";
 
