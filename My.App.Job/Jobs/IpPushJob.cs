@@ -14,7 +14,7 @@ namespace My.App.Job
         public IpPushJob(ILogger<BaseJob> logger, IHostApplicationLifetime appLifetime) : base(JobTimerInterval, logger, appLifetime)
         {
             //base.Logger.Log(LogLevel.Debug, "测试作业启动");
-            LogHelper.Log("IP推送作业启动");
+            // LogHelper.Log("IP推送作业启动");
         }
 
         protected override void DoWork(object state)

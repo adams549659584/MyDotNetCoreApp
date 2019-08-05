@@ -15,7 +15,7 @@ namespace My.App.Job
 {
     public class GetFreeProxyJob : BaseJob
     {
-        private static TimeSpan JobTimerInterval = TimeSpan.FromMinutes(60);
+        private static TimeSpan JobTimerInterval = TimeSpan.FromMinutes(20);
         private static RedisHelper RedisHelper = new RedisHelper("dotnetcore_redis:6379");
         private static string IpProxyCacheKey = "useful_proxy";
 
@@ -40,7 +40,7 @@ namespace My.App.Job
         public GetFreeProxyJob(ILogger<BaseJob> logger, IHostApplicationLifetime appLifetime) : base(JobTimerInterval, logger, appLifetime)
         {
             //base.Logger.Log(LogLevel.Debug, "测试作业启动");
-            LogHelper.Log("抓取免费IP代理作业启动");
+            // LogHelper.Log("抓取免费IP代理作业启动");
         }
 
         protected override void DoWork(object state)

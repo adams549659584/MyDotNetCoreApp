@@ -28,6 +28,11 @@ namespace My.App.Job
             get { return appLifetime; }
             set { appLifetime = value; }
         }
+
+        /// <summary>
+        /// 作业是否运行中
+        /// </summary>
+        protected static Dictionary<string,bool> JobRunningStatus = new Dictionary<string, bool>(); 
         #endregion
 
         /// <summary>
@@ -60,6 +65,14 @@ namespace My.App.Job
 
         void TimerCallback(object state)
         {
+            var jobName = this.GetType().Name;
+            if (JobRunningStatus.ContainsKey(jobName) && JobRunningStatus[jobName])
+            {
+                Console.WriteLine($"上次作业{jobName}暂未执行完毕，本次作业取消");
+                return;
+            }
+            JobRunningStatus[jobName] = true;
+            Console.WriteLine($"作业{jobName}执行开始");
             try
             {
                 DoWork(state);
@@ -68,6 +81,8 @@ namespace My.App.Job
             {
                 LogHelper.Log(ex);
             }
+            JobRunningStatus[jobName] = false;
+             Console.WriteLine($"作业{jobName}执行结束");
         }
 
         /// <summary>
