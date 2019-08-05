@@ -285,6 +285,7 @@ namespace My.App.Job
         /// </summary>
         void ValidProxyIps()
         {
+            Console.WriteLine($"开始校验代理ip是否可用，当前需校验ip数量为{RawProxyIps.Count}");
             if (RawProxyIps.Count > 0)
             {
                 string checkUrl = "http://httpbin.org/ip";
@@ -299,7 +300,7 @@ namespace My.App.Job
                             if (resultIp.Contains("origin"))
                             {
                                 RedisHelper.Set(IpProxyCacheKey, proxyIp, "0");
-                                RawProxyIps.Remove(proxyIp); 
+                                RawProxyIps[proxyIp] = true;
                                 Console.WriteLine($"代理IP：{proxyIp} 通过校验");
                                 break;
                             }
@@ -312,6 +313,7 @@ namespace My.App.Job
                     Console.WriteLine($"代理IP：{proxyIp} 未通过校验");
                 }
             }
+            Console.WriteLine($"结束校验代理ip是否可用，当前抓取可用ip数量为{RawProxyIps.Values.Count(x => x)}");
         }
     }
 

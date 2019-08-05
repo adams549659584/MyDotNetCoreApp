@@ -82,7 +82,7 @@ namespace My.App.Job
                 LogHelper.Log(ex);
             }
             JobRunningStatus[jobName] = false;
-             Console.WriteLine($"作业{jobName}执行结束");
+            Console.WriteLine($"作业{jobName}执行结束");
         }
 
         /// <summary>
