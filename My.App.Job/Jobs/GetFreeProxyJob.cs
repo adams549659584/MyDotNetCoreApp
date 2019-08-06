@@ -312,7 +312,6 @@ namespace My.App.Job
                             RedisHelper.HashSet(IpProxyCacheKey, proxyIp, "0");
                             RawProxyIps[proxyIp] = true;
                             Console.WriteLine($"代理IP：{proxyIp} 通过校验");
-                            break;
                         }
                     }
                     catch (Exception ex)
