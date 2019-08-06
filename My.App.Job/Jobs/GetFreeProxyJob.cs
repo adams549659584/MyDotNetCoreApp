@@ -89,13 +89,12 @@ namespace My.App.Job
                 {
                     UsefulProxyIps.RemoveAll(x => x == usableProxyIp);
                     UsefulProxyIps.Reverse();
-                    UsefulProxyIps.Add(usableProxyIp);
+                    UsefulProxyIps.Add($"{usableProxyIp}");
                     UsefulProxyIps.Reverse();
                 }
                 string ipHtml = string.Empty;
-                for (int i = 0; i < UsefulProxyIps.Count; i++)
+                foreach (var currProxyIp in UsefulProxyIps)
                 {
-                    var currProxyIp = UsefulProxyIps[i];
                     try
                     {
                         Console.WriteLine($"抓取免费IP代理作业 ihuan 当前使用代理Ip：{currProxyIp}");
@@ -199,13 +198,12 @@ namespace My.App.Job
                 {
                     UsefulProxyIps.RemoveAll(x => x == usableProxyIp);
                     UsefulProxyIps.Reverse();
-                    UsefulProxyIps.Add(usableProxyIp);
+                    UsefulProxyIps.Add($"{usableProxyIp}");
                     UsefulProxyIps.Reverse();
                 }
                 string ipHtml = string.Empty;
-                for (int i = 0; i < UsefulProxyIps.Count; i++)
+                foreach (var currProxyIp in UsefulProxyIps)
                 {
-                    var currProxyIp = UsefulProxyIps[i];
                     try
                     {
                         Console.WriteLine($"抓取免费IP代理作业 89ip 当前使用代理Ip：{currProxyIp}");
