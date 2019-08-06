@@ -330,16 +330,4 @@ namespace My.App.Job
             Console.WriteLine($"结束校验代理ip是否可用，当前抓取可用ip数量为{usefulProxyIpCount}");
         }
     }
-
-    class IpProxyView
-    {
-        [JsonProperty("row")]
-        public int Row { get; set; }
-
-        [JsonProperty("key")]
-        public string Key { get; set; }
-
-        [JsonProperty("value")]
-        public int Value { get; set; }
-    }
 }
