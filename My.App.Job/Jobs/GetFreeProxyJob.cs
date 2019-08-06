@@ -50,11 +50,11 @@ namespace My.App.Job
             //LogHelper.Log("抓取免费IP代理作业执行：");
             var dictProxyIps = RedisHelper.HashGetAll(IpProxyCacheKey);
             var usefulProxyIps = dictProxyIps.Keys.ToList();
-            RawProxyIps.Clear();
             var task01 = Task.Run(() => FreeProxy01("", 1, usefulProxyIps.Clone()));
             var task02 = Task.Run(() => FreeProxy02(1, usefulProxyIps.Clone()));
             Task.WaitAll(task01, task02);
             ValidProxyIps();
+            RawProxyIps.Clear();
         }
 
         /// <summary>
@@ -124,7 +124,10 @@ namespace My.App.Job
                             var port = item.SelectSingleNode($"{item.XPath}//td[2]").InnerText;
                             Console.WriteLine($"抓取免费IP代理作业 ihuan 抓取到IP:{ip}:{port}");
                             // RedisHelper.Set(IpProxyCacheKey, $"{ip}:{port}", "1");
-                            RawProxyIps[$"{ip}:{port}"] = false;
+                            lock (RawProxyIps)
+                            {
+                                RawProxyIps[$"{ip}:{port}"] = false;
+                            }
                         }
                         catch (Exception ex)
                         {
@@ -236,7 +239,10 @@ namespace My.App.Job
                             var port = item.SelectSingleNode($"{item.XPath}//td[2]").InnerText.Trim();
                             Console.WriteLine($"抓取免费IP代理作业 89ip 抓取到IP:{ip}:{port}");
                             // RedisHelper.Set(IpProxyCacheKey, $"{ip}:{port}", "1");
-                            RawProxyIps[$"{ip}:{port}"] = false;
+                            lock (RawProxyIps)
+                            {
+                                RawProxyIps[$"{ip}:{port}"] = false;
+                            }
                         }
                         catch (Exception ex)
                         {
