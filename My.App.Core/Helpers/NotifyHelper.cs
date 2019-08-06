@@ -22,7 +22,8 @@ namespace My.App.Core
             string url = $"https://sc.ftqq.com/SCU33276T4801adab529b3595e3dc25d37cbe38a35bb5f40021bbd.send?text={title}&desp={body}";
             //{"errno":0,"errmsg":"success","dataset":"done"}
             //{"errno":1024,"errmsg":"\u4e0d\u8981\u91cd\u590d\u53d1\u9001\u540c\u6837\u7684\u5185\u5bb9"}
-            var fangTangResult = HttpHelper.Get<FangTangResultView>(url);;
+            var result = HttpHelper.Get(url);
+            var fangTangResult = JsonHelper.Deserialize<FangTangResultView>(result);
             if (fangTangResult.ErrNo != 0)
             {
                 throw new Exception(fangTangResult.ErrMsg);
