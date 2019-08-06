@@ -37,8 +37,6 @@ namespace My.App.Job
         /// <returns></returns>
         private static Dictionary<string, bool> RawProxyIps = new Dictionary<string, bool>();
 
-        private static List<string> UsefulProxyIps = new List<string>();
-
         public GetFreeProxyJob(ILogger<BaseJob> logger, IHostApplicationLifetime appLifetime) : base(JobTimerInterval, logger, appLifetime)
         {
             //base.Logger.Log(LogLevel.Debug, "测试作业启动");
@@ -50,10 +48,10 @@ namespace My.App.Job
             //base.Logger.Log(LogLevel.Debug, "测试作业执行：");
             //LogHelper.Log("抓取免费IP代理作业执行：");
             var dictProxyIps = RedisHelper.HashGetAll(IpProxyCacheKey);
-            UsefulProxyIps = dictProxyIps.Keys.ToList();
+            var usefulProxyIps = dictProxyIps.Keys.ToList();
             RawProxyIps.Clear();
-            var task01 = Task.Run(() => FreeProxy01());
-            var task02 = Task.Run(() => FreeProxy02());
+            var task01 = Task.Run(() => FreeProxy01("", 1, usefulProxyIps));
+            var task02 = Task.Run(() => FreeProxy02(1, usefulProxyIps));
             Task.WaitAll(task01, task02);
             ValidProxyIps();
         }
@@ -61,7 +59,7 @@ namespace My.App.Job
         /// <summary>
         /// https://ip.ihuan.me
         /// </summary>
-        void FreeProxy01(string urlParams = "", int page = 1, string usableProxyIp = "")
+        void FreeProxy01(string urlParams = "", int page = 1, List<string> usefulProxyIps = null)
         {
             try
             {
@@ -85,15 +83,8 @@ namespace My.App.Job
                 }
                 var headerStrs = ReadAllLines(headerFilePath);
                 var dictHeaders = headerStrs.Select(h => h.Split(new string[] { ": " }, StringSplitOptions.RemoveEmptyEntries)).ToDictionary(x => x[0], x => x[1]);
-                if (!string.IsNullOrWhiteSpace(usableProxyIp))
-                {
-                    UsefulProxyIps.RemoveAll(x => x == usableProxyIp);
-                    UsefulProxyIps.Reverse();
-                    UsefulProxyIps.Add($"{usableProxyIp}");
-                    UsefulProxyIps.Reverse();
-                }
                 string ipHtml = string.Empty;
-                foreach (var currProxyIp in UsefulProxyIps)
+                foreach (var currProxyIp in usefulProxyIps)
                 {
                     try
                     {
@@ -102,7 +93,8 @@ namespace My.App.Job
                         if (ipResponse.StatusCode == HttpStatusCode.OK)
                         {
                             ipHtml = ipResponse.Content.ReadAsStringAsync().Result;
-                            usableProxyIp = currProxyIp;
+                            usefulProxyIps.RemoveAll(x => x == currProxyIp);
+                            usefulProxyIps.Insert(0, currProxyIp);
                             break;
                         }
                     }
@@ -155,7 +147,7 @@ namespace My.App.Job
                     if (nextPage > 0)
                     {
                         Console.WriteLine($"抓取免费IP代理作业开始抓取ihuan第{nextPage}页:");
-                        FreeProxy01(href, nextPage, usableProxyIp);
+                        FreeProxy01(href, nextPage, usefulProxyIps);
                         return;
                     }
                 }
@@ -170,7 +162,7 @@ namespace My.App.Job
         /// <summary>
         /// http://www.89ip.cn/index_1.html
         /// </summary>
-        void FreeProxy02(int page = 1, string usableProxyIp = "")
+        void FreeProxy02(int page = 1, List<string> usefulProxyIps = null)
         {
             try
             {
@@ -194,15 +186,8 @@ namespace My.App.Job
                 }
                 var headerStrs = ReadAllLines(headerFilePath);
                 var dictHeaders = headerStrs.Select(h => h.Split(new string[] { ": " }, StringSplitOptions.RemoveEmptyEntries)).ToDictionary(x => x[0], x => x[1]);
-                if (!string.IsNullOrWhiteSpace(usableProxyIp))
-                {
-                    UsefulProxyIps.RemoveAll(x => x == usableProxyIp);
-                    UsefulProxyIps.Reverse();
-                    UsefulProxyIps.Add($"{usableProxyIp}");
-                    UsefulProxyIps.Reverse();
-                }
                 string ipHtml = string.Empty;
-                foreach (var currProxyIp in UsefulProxyIps)
+                foreach (var currProxyIp in usefulProxyIps)
                 {
                     try
                     {
@@ -211,7 +196,8 @@ namespace My.App.Job
                         if (ipResponse.StatusCode == HttpStatusCode.OK)
                         {
                             ipHtml = ipResponse.Content.ReadAsStringAsync().Result;
-                            usableProxyIp = currProxyIp;
+                            usefulProxyIps.RemoveAll(x => x == currProxyIp);
+                            usefulProxyIps.Insert(0, currProxyIp);
                             break;
                         }
                     }
@@ -269,7 +255,7 @@ namespace My.App.Job
                     if (nextPage > 0)
                     {
                         Console.WriteLine($"抓取免费IP代理作业开始抓取89ip第{nextPage}页:");
-                        FreeProxy02(nextPage, usableProxyIp);
+                        FreeProxy02(nextPage, usefulProxyIps);
                         return;
                     }
                 }
