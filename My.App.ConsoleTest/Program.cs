@@ -11,6 +11,7 @@ namespace My.App.ConsoleTest
             //TestLogHelper();
             //TestNotifyHelper();
             //TestUnicodeHelper();
+            TestHttpHelper();
             Console.ReadLine();
         }
 
@@ -49,6 +50,14 @@ namespace My.App.ConsoleTest
         {
             string rawStr = @"\u4e0d\u8981\u91cd\u590d\u53d1\u9001\u540c\u6837\u7684\u5185\u5bb9";
             var chineseStr = UnicodeHelper.ToChinese(rawStr);
+        }
+
+        static void TestHttpHelper()
+        {
+            using (HttpHelper httpHelper = new HttpHelper())
+            {
+                var result = httpHelper.GetResponseString("http://httpbin.org/ip", null, 5, new System.Net.WebProxy($"http://163.204.243.99:9999"));
+            }
         }
     }
 }
