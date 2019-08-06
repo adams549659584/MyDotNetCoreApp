@@ -1,5 +1,8 @@
 ﻿using My.App.Core;
 using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 namespace My.App.ConsoleTest
 {
@@ -54,10 +57,37 @@ namespace My.App.ConsoleTest
 
         static void TestHttpHelper()
         {
-            using (HttpHelper httpHelper = new HttpHelper())
+            RedisHelper redisHelper = new RedisHelper();
+            string IpProxyCacheKey = "useful_proxy";
+            var proxyIps = redisHelper.HashGetAll(IpProxyCacheKey);
+            foreach (var proxyIp in proxyIps.Keys)
             {
-                var result = httpHelper.GetResponseString("http://httpbin.org/ip", null, 5, new System.Net.WebProxy($"http://163.204.243.99:9999"));
+                try
+                {
+                    string headerFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config", "test_header.txt");
+                    var headerStrs = ReadAllLines(headerFilePath);
+                    var dictHeaders = headerStrs.Select(h => h.Split(new string[] { ": " }, StringSplitOptions.RemoveEmptyEntries)).ToDictionary(x => x[0], x => x[1]);
+                    var result = HttpHelper.Get("http://httpbin.org/ip", dictHeaders, 5*1000, new System.Net.WebProxy($"http://{proxyIp}"));
+                    Console.WriteLine($"{proxyIp}:{result}");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"{proxyIp}:{ex.Message}");
+                }
             }
+        }
+
+        static string[] ReadAllLines(string path)
+        {
+            if (File.Exists(path))
+            {
+                return File.ReadAllLines(path);
+            }
+            else
+            {
+                Console.WriteLine($"文件【{path}】不存在");
+            }
+            return new string[0];
         }
     }
 }

@@ -1,0 +1,36 @@
+{
+  // 使用 IntelliSense 了解相关属性。 
+  // 悬停以查看现有属性的描述。
+  // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "My.App.ConsoleTest",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "My.App.ConsoleTest",
+      "program": "${workspaceFolder}/My.App.ConsoleTest/bin/Debug/netcoreapp3.0/My.App.ConsoleTest.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/My.App.ConsoleTest",
+      "console": "internalConsole",
+      "stopAtEntry": false
+    },
+    {
+      "name": "My.App.Job",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "My.App.Job",
+      "program": "${workspaceFolder}/My.App.Job/bin/Debug/netcoreapp3.0/My.App.Job.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/My.App.Job",
+      "console": "internalConsole",
+      "stopAtEntry": false
+    },
+    {
+      "name": ".NET Core Attach",
+      "type": "coreclr",
+      "request": "attach",
+      "processId": "${command:pickProcess}"
+    }
+  ]
+}

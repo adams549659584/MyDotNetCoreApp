@@ -38,8 +38,8 @@ namespace My.App.Job
                          foreach (var mpappUrl in mpappUrls)
                          {
                              string productUrl = mpappUrl.Replace("pages/details/main", "http://mpapp.360kad.com/Product/Detail");
-                             var result = HttpHelper.GetResponseString(productUrl);
-                             Console.WriteLine($"{productUrl}ִ�����");
+                             var result = HttpHelper.Get(productUrl);
+                             Console.WriteLine($"{productUrl}ִ执行完毕");
                          }
                      }
                      catch (Exception ex)

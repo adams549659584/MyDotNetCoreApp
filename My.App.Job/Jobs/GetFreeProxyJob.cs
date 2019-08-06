@@ -51,8 +51,8 @@ namespace My.App.Job
             var dictProxyIps = RedisHelper.HashGetAll(IpProxyCacheKey);
             var usefulProxyIps = dictProxyIps.Keys.ToList();
             RawProxyIps.Clear();
-            var task01 = Task.Run(() => FreeProxy01("", 1, usefulProxyIps));
-            var task02 = Task.Run(() => FreeProxy02(1, usefulProxyIps));
+            var task01 = Task.Run(() => FreeProxy01("", 1, usefulProxyIps.Clone()));
+            var task02 = Task.Run(() => FreeProxy02(1, usefulProxyIps.Clone()));
             Task.WaitAll(task01, task02);
             ValidProxyIps();
         }
@@ -87,19 +87,17 @@ namespace My.App.Job
                     var headerStrs = ReadAllLines(headerFilePath);
                     var dictHeaders = headerStrs.Select(h => h.Split(new string[] { ": " }, StringSplitOptions.RemoveEmptyEntries)).ToDictionary(x => x[0], x => x[1]);
                     string ipHtml = string.Empty;
-                    foreach (var currProxyIp in usefulProxyIps)
+                    var tempProxyIps = new string[usefulProxyIps.Count];
+                    usefulProxyIps.CopyTo(tempProxyIps);
+                    foreach (var currProxyIp in tempProxyIps)
                     {
                         try
                         {
                             Console.WriteLine($"抓取免费IP代理作业 ihuan 当前使用代理Ip：{currProxyIp}");
-                            var ipResponse = HttpHelper.GetResponse(getIpUrl, dictHeaders, 10, new WebProxy($"http://{currProxyIp}"));
-                            if (ipResponse.StatusCode == HttpStatusCode.OK)
-                            {
-                                ipHtml = ipResponse.Content.ReadAsStringAsync().Result;
-                                usefulProxyIps.RemoveAll(x => x == currProxyIp);
-                                usefulProxyIps.Insert(0, currProxyIp);
-                                break;
-                            }
+                            ipHtml = HttpHelper.Get(getIpUrl, dictHeaders, 10*1000, new WebProxy($"http://{currProxyIp}"));
+                            usefulProxyIps.RemoveAll(x => x == currProxyIp);
+                            usefulProxyIps.Insert(0, currProxyIp);
+                            break;
                         }
                         catch (Exception ex)
                         {
@@ -194,19 +192,17 @@ namespace My.App.Job
                     var headerStrs = ReadAllLines(headerFilePath);
                     var dictHeaders = headerStrs.Select(h => h.Split(new string[] { ": " }, StringSplitOptions.RemoveEmptyEntries)).ToDictionary(x => x[0], x => x[1]);
                     string ipHtml = string.Empty;
-                    foreach (var currProxyIp in usefulProxyIps)
+                    var tempProxyIps = new string[usefulProxyIps.Count];
+                    usefulProxyIps.CopyTo(tempProxyIps);
+                    foreach (var currProxyIp in tempProxyIps)
                     {
                         try
                         {
                             Console.WriteLine($"抓取免费IP代理作业 89ip 当前使用代理Ip：{currProxyIp}");
-                            var ipResponse = HttpHelper.GetResponse(getIpUrl, dictHeaders, 10, new WebProxy($"http://{currProxyIp}"));
-                            if (ipResponse.StatusCode == HttpStatusCode.OK)
-                            {
-                                ipHtml = ipResponse.Content.ReadAsStringAsync().Result;
-                                usefulProxyIps.RemoveAll(x => x == currProxyIp);
-                                usefulProxyIps.Insert(0, currProxyIp);
-                                break;
-                            }
+                            ipHtml = HttpHelper.Get(getIpUrl, dictHeaders, 10*1000, new WebProxy($"http://{currProxyIp}"));
+                            usefulProxyIps.RemoveAll(x => x == currProxyIp);
+                            usefulProxyIps.Insert(0, currProxyIp);
+                            break;
                         }
                         catch (Exception ex)
                         {
@@ -302,17 +298,13 @@ namespace My.App.Job
                 {
                     try
                     {
-                        var ipResponse = HttpHelper.GetResponse(checkUrl, null, 5, new WebProxy($"http://{proxyIp}"));
-                        if (ipResponse.StatusCode == HttpStatusCode.OK)
+                        var resultIp = HttpHelper.Get(checkUrl, null, 5*1000, new WebProxy($"http://{proxyIp}"));
+                        if (resultIp.Contains("origin"))
                         {
-                            var resultIp = ipResponse.Content.ReadAsStringAsync().Result;
-                            if (resultIp.Contains("origin"))
-                            {
-                                RedisHelper.HashSet(IpProxyCacheKey, proxyIp, "0");
-                                RawProxyIps[proxyIp] = true;
-                                Console.WriteLine($"代理IP：{proxyIp} 通过校验");
-                                break;
-                            }
+                            RedisHelper.HashSet(IpProxyCacheKey, proxyIp, "0");
+                            RawProxyIps[proxyIp] = true;
+                            Console.WriteLine($"代理IP：{proxyIp} 通过校验");
+                            break;
                         }
                     }
                     catch (Exception ex)

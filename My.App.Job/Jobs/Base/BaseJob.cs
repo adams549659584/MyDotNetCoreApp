@@ -33,8 +33,6 @@ namespace My.App.Job
         /// 作业是否运行中
         /// </summary>
         protected static Dictionary<string, bool> JobRunningStatus = new Dictionary<string, bool>();
-
-        protected HttpHelper HttpHelper { get; private set; }
         #endregion
 
         /// <summary>
@@ -67,14 +65,16 @@ namespace My.App.Job
 
         void TimerCallback(object state)
         {
-            HttpHelper = new HttpHelper();
             var jobName = this.GetType().Name;
-            if (JobRunningStatus.ContainsKey(jobName) && JobRunningStatus[jobName])
+            lock (JobRunningStatus)
             {
-                Console.WriteLine($"上次作业{jobName}暂未执行完毕，本次作业取消");
-                return;
+                if (JobRunningStatus.ContainsKey(jobName) && JobRunningStatus[jobName])
+                {
+                    Console.WriteLine($"上次作业{jobName}暂未执行完毕，本次作业取消");
+                    return;
+                }
+                JobRunningStatus[jobName] = true;
             }
-            JobRunningStatus[jobName] = true;
             Console.WriteLine($"作业{jobName}执行开始");
             try
             {
@@ -84,9 +84,11 @@ namespace My.App.Job
             {
                 LogHelper.Log(ex);
             }
-            JobRunningStatus[jobName] = false;
+            lock (JobRunningStatus)
+            {
+                JobRunningStatus[jobName] = false;
+            }
             Console.WriteLine($"作业{jobName}执行结束");
-            HttpHelper.Dispose();
         }
 
         /// <summary>

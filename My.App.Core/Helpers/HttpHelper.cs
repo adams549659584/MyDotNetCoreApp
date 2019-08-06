@@ -4,70 +4,62 @@ using System.Net.Http;
 using System.Text;
 using System.Linq;
 using System.Net;
+using RestSharp;
 
 namespace My.App.Core
 {
-    public class HttpHelper : IDisposable
+    public class HttpHelper
     {
-        private HttpClientHandler _httpClientHandler = null;
-        private HttpClient _httpClient = null;
-
-        public HttpHelper()
+        private static (RestClient restClient, RestRequest restRequest) InitRestClient(string url, Dictionary<string, string> dictHeaders, int timeout, IWebProxy proxy, Method method)
         {
-            _httpClientHandler = new HttpClientHandler()
+            var restClient = new RestClient();
+            if (timeout > 0)
             {
-                AutomaticDecompression = DecompressionMethods.GZip,
-                UseProxy = false
-            };
-            _httpClient = new HttpClient(_httpClientHandler);
-        }
-
-        public void Dispose()
-        {
-            _httpClientHandler?.Dispose();
-            _httpClient?.Dispose();
-        }
-
-        /// <summary>
-        /// get 请求
-        /// </summary>
-        /// <param name="url">链接</param>
-        /// <param name="dictHeaders">请求头</param>
-        /// <param name="timeout">超时 单位/秒</param>
-        /// <param name="proxy">代理</param>
-        /// <returns></returns>
-        public HttpResponseMessage GetResponse(string url, Dictionary<string, string> dictHeaders = null, int timeout = 0, IWebProxy proxy = null)
-        {
-            _httpClientHandler.Proxy = proxy;
+                restClient.Timeout = timeout;
+            }
+            if (proxy != null)
+            {
+                restClient.Proxy = proxy;
+            }
+            var restRequest = new RestRequest(url, method);
             if (dictHeaders != null && dictHeaders.Count > 0)
             {
                 foreach (var headerKey in dictHeaders.Keys)
                 {
-                    _httpClient.DefaultRequestHeaders.Add(headerKey, dictHeaders[headerKey]);
+                    restRequest.AddHeader(headerKey, dictHeaders[headerKey]);
                 }
             }
-            if (timeout > 0)
+            return (restClient, restRequest);
+        }
+        private static IRestResponse GetExecuteRes(string url, Dictionary<string, string> dictHeaders = null, int timeout = 0, IWebProxy proxy = null)
+        {
+            (var restClient, var restRequest) = InitRestClient(url, dictHeaders, timeout, proxy, Method.GET);
+            var response = restClient.Execute(restRequest);
+            if (response.ErrorException != null)
             {
-                _httpClient.Timeout = new TimeSpan(0, 0, timeout);
+                throw response.ErrorException;
             }
-            HttpResponseMessage response = _httpClient.GetAsync(url).Result;
             return response;
-
+        }
+        public static string Get(string url, Dictionary<string, string> dictHeaders = null, int timeout = 0, IWebProxy proxy = null)
+        {
+            return GetExecuteRes(url, dictHeaders, timeout, proxy).Content;
+        }
+        public static T Get<T>(string url, Dictionary<string, string> dictHeaders = null, int timeout = 0, IWebProxy proxy = null)  where T : new()
+        {
+            (var restClient, var restRequest) = InitRestClient(url, dictHeaders, timeout, proxy, Method.GET);
+            return restClient.Execute<T>(restRequest).Data;
         }
 
-        /// <summary>
-        /// get 请求
-        /// </summary>
-        /// <param name="url">链接</param>
-        /// <param name="dictHeaders">请求头</param>
-        /// <param name="timeout">超时 单位/秒</param>
-        /// <param name="proxy">代理</param>
-        /// <returns></returns>
-        public string GetResponseString(string url, Dictionary<string, string> dictHeaders = null, int timeout = 0, IWebProxy proxy = null)
+        public static string Post(string url, Dictionary<string, string> dictHeaders = null, int timeout = 0, IWebProxy proxy = null)
         {
-            var response = GetResponse(url, dictHeaders, timeout, proxy);
-            string resultStr = response.Content.ReadAsStringAsync().Result;
-            return resultStr;
+            (var restClient, var restRequest) = InitRestClient(url, dictHeaders, timeout, proxy, Method.POST);
+            return restClient.Execute(restRequest).Content;
+        }
+        public static T Post<T>(string url, Dictionary<string, string> dictHeaders = null, int timeout = 0, IWebProxy proxy = null)  where T : new()
+        {
+            (var restClient, var restRequest) = InitRestClient(url, dictHeaders, timeout, proxy, Method.POST);
+            return restClient.Execute<T>(restRequest).Data;
         }
     }
 }

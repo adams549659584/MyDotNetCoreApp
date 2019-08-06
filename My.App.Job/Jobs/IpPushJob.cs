@@ -27,7 +27,7 @@ namespace My.App.Job
         void IpPush()
         {
             string getIpUrl = "http://ip-api.com/line/?fields=query";
-            string nowIp = HttpHelper.GetResponseString(getIpUrl).Trim();
+            string nowIp = HttpHelper.Get(getIpUrl).Trim();
             string ipCacheKey = "My.App.Job.IpPush.LastIp";
             string oldIp = RedisHelper.Get<string>(ipCacheKey);
             // Console.WriteLine($"{DateTime.Now.ToString("yyyyMMddHHmmssfff")}：{oldIp}");

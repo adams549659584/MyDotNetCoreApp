@@ -13,4 +13,10 @@
     <Folder Include="bin\Debug\netcoreapp3.0\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Config\test_header.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
