@@ -22,12 +22,12 @@ namespace My.App.Job
         /// <summary>
         /// 头文件最后修改时间
         /// </summary>
-        private static Dictionary<string,DateTime> HeaderFilesLastWriteTime = new Dictionary<string, DateTime>();
+        private static Dictionary<string, DateTime> HeaderFilesLastWriteTime = new Dictionary<string, DateTime>();
 
         /// <summary>
         /// 头文件是否失效
         /// </summary>
-        private static Dictionary<string,bool> HeaderFilesIsExpried = new Dictionary<string, bool>();
+        private static Dictionary<string, bool> HeaderFilesIsExpried = new Dictionary<string, bool>();
 
         /// <summary>
         /// 暂存ip
@@ -35,7 +35,7 @@ namespace My.App.Job
         /// <typeparam name="string">ip</typeparam>
         /// <typeparam name="bool">随便</typeparam>
         /// <returns></returns>
-        private static Dictionary<string,bool> RawProxyIps = new Dictionary<string, bool>();
+        private static Dictionary<string, bool> RawProxyIps = new Dictionary<string, bool>();
 
         private static List<string> UsefulProxyIps = new List<string>();
 
@@ -49,7 +49,7 @@ namespace My.App.Job
         {
             //base.Logger.Log(LogLevel.Debug, "测试作业执行：");
             //LogHelper.Log("抓取免费IP代理作业执行：");
-            var dictProxyIps = RedisHelper.GetAllEntriesFromHash(IpProxyCacheKey);
+            var dictProxyIps = RedisHelper.HashGetAll(IpProxyCacheKey);
             UsefulProxyIps = dictProxyIps.Keys.ToList();
             RawProxyIps.Clear();
             var task01 = Task.Run(() => FreeProxy01());
@@ -293,7 +293,7 @@ namespace My.App.Job
             }
             return new string[0];
         }
-        
+
         /// <summary>
         /// 校验代理ip是否可用，可用的放进ip池
         /// </summary>
@@ -313,7 +313,7 @@ namespace My.App.Job
                             var resultIp = ipResponse.Content.ReadAsStringAsync().Result;
                             if (resultIp.Contains("origin"))
                             {
-                                RedisHelper.Set(IpProxyCacheKey, proxyIp, "0");
+                                RedisHelper.HashSet(IpProxyCacheKey, proxyIp, "0");
                                 RawProxyIps[proxyIp] = true;
                                 Console.WriteLine($"代理IP：{proxyIp} 通过校验");
                                 break;

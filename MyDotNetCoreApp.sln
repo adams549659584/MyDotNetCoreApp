@@ -7,19 +7,19 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MyTest", "MyTest", "{C0FE4C
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MyJob", "MyJob", "{AA114056-23F0-4241-90F7-7337002C1BEF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "My.App.Job", "My.App.Job\My.App.Job.csproj", "{5BFD3638-7AD5-4067-A9EE-52025AEAF723}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "My.App.Job", "My.App.Job\My.App.Job.csproj", "{5BFD3638-7AD5-4067-A9EE-52025AEAF723}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "My.App.ConsoleTest", "My.App.ConsoleTest\My.App.ConsoleTest.csproj", "{8F641E49-C176-43E2-B6B9-1B09A4AF2F60}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "My.App.ConsoleTest", "My.App.ConsoleTest\My.App.ConsoleTest.csproj", "{8F641E49-C176-43E2-B6B9-1B09A4AF2F60}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MyAppCore", "MyAppCore", "{FEB6FB93-53FF-4A80-B419-B7C08C414928}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "My.App.Core", "My.App.Core\My.App.Core.csproj", "{91593679-38A7-4BDF-8804-3934AC813F30}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "My.App.Core", "My.App.Core\My.App.Core.csproj", "{91593679-38A7-4BDF-8804-3934AC813F30}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MyWeb", "MyWeb", "{CE10C319-D03C-432B-AEBD-CC918DC99391}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "My.App.WebApi", "My.App.WebApi\My.App.WebApi.csproj", "{1AEF5F46-EA4C-4A50-8C3C-6B6383743CB8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "My.App.WebApi", "My.App.WebApi\My.App.WebApi.csproj", "{1AEF5F46-EA4C-4A50-8C3C-6B6383743CB8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "My.App.UnitTest", "My.App.UnitTest\My.App.UnitTest.csproj", "{609BC557-2E2E-45CF-A92B-04E7FF133018}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "My.App.UnitTest", "My.App.UnitTest\My.App.UnitTest.csproj", "{609BC557-2E2E-45CF-A92B-04E7FF133018}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

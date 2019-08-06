@@ -7,7 +7,7 @@ namespace My.App.ConsoleTest
     {
         static void Main(string[] args)
         {
-            //TestRedisHelper();
+            TestRedisHelper();
             //TestLogHelper();
             //TestNotifyHelper();
             //TestUnicodeHelper();
@@ -18,8 +18,11 @@ namespace My.App.ConsoleTest
         {
             var redisHelper = new RedisHelper();
             var cacheKey = "My.App.ConsoleTest";
-            var setResult = redisHelper.Set(cacheKey, "dddddddddd");
-            var cacheResult = redisHelper.Get<string>(cacheKey);
+            var setResult = redisHelper.Set(cacheKey, 1);
+            var cacheResult = redisHelper.Get<int>(cacheKey);
+            var timeExpried = redisHelper.KeyTimeToLive(cacheKey);
+            var delResult = redisHelper.Delete(cacheKey);
+            var dictHashResults = redisHelper.HashGetAll("useful_proxy");
             Console.WriteLine(cacheResult);
         }
 

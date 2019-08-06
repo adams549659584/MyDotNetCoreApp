@@ -1,21 +1,46 @@
-﻿using ServiceStack.Caching;
-using ServiceStack.Redis;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using StackExchange.Redis;
+using System.Linq;
 
 namespace My.App.Core
 {
     public class RedisHelper
     {
-        private readonly RedisClient redisClient;
-        private ICacheClient cacheClient;
+        #region 初始化
+        private string _configuration = string.Empty;
+        private ConnectionMultiplexer _redisClient;
+        private ConnectionMultiplexer RedisClient
+        {
+            get
+            {
+                if (_redisClient == null)
+                {
+                    _redisClient = ConnectionMultiplexer.Connect(_configuration);
+                }
+                _redisClient.GetDatabase();
+                return _redisClient;
+            }
+        }
+
+        private IDatabase RedisDB
+        {
+            get
+            {
+                return RedisClient.GetDatabase();
+            }
+        }
+        #endregion
+
+        //private readonly RedisClient redisClient;
+        //private ICacheClient cacheClient;
 
         public object this[string key]
         {
             get
             {
-                return this.Get(key);
+                return this.Get<object>(key);
             }
             set
             {
@@ -26,76 +51,64 @@ namespace My.App.Core
 
         public RedisHelper()
         {
-            this.redisClient = new RedisClient("192.168.1.88", 6379);
-            this.cacheClient = (ICacheClient)this.redisClient;
+            this._configuration = "dotnetcore_redis:6379";
         }
 
-        public RedisHelper(string host)
+        public RedisHelper(string configuration)
         {
-            this.redisClient = new RedisClient(host);
-            this.cacheClient = (ICacheClient)this.redisClient;
+            this._configuration = configuration;
         }
 
         public bool Delete(string key)
         {
-            return this.cacheClient.Remove(this.GetKey(key));
+            return RedisDB.KeyDelete(key);
+        }
+
+        public bool Delete(string[] keys)
+        {
+            var redisKeys = new RedisKey[keys.Length];
+            keys.CopyTo(redisKeys, 0);
+            return RedisDB.KeyDelete(redisKeys) > 0;
         }
 
         public bool Exists(string key)
         {
-            return this.redisClient.Exists(this.GetKey(key)) > 0L;
+            return RedisDB.KeyExists(key);
         }
 
-        public object Get(string key)
+        public T Get<T>(string key)
         {
-            return this.cacheClient.Get<object>(this.GetKey(key));
-        }
-
-        public IDictionary<string, T> Get<T>(string[] keys) where T : class
-        {
-            if (keys == null || keys.Length == 0)
-                throw new ArgumentNullException("keys");
-            for (int index = 0; index < keys.Length; ++index)
-                keys[index] = this.GetKey(keys[index]);
-            return this.cacheClient.GetAll<T>((IEnumerable<string>)keys);
-        }
-
-        public Dictionary<string, string> GetAllEntriesFromHash(string hashId)
-        {
-            return this.redisClient.GetAllEntriesFromHash(hashId);
-        }
-
-        public T Get<T>(string key) where T : class
-        {
-            return this.cacheClient.Get<T>(this.GetKey(key));
+            var redisValue = RedisDB.StringGet(key);
+            if (redisValue.HasValue)
+            {
+                return JsonHelper.Deserialize<T>(redisValue);
+            }
+            return default(T);
         }
 
         public bool Set(string key, object value, int minute = 24)
         {
             TimeSpan expiresIn = new TimeSpan(0, 0, minute, 0, 0);
-            return this.cacheClient.Set<object>(key, value, expiresIn);
+            return this.Set(key, value is string ? value : JsonHelper.Serialize(value), expiresIn);
         }
         public bool Set(string key, object value, TimeSpan expiresIn)
         {
             if (expiresIn == null)
                 throw new ArgumentNullException("过期时间不能为空");
-            return this.cacheClient.Set<object>(key, value, expiresIn);
+            return RedisDB.StringSet(key, JsonHelper.Serialize(value), expiresIn);
         }
-        public bool Set(string hashId, string key, string value)
+        public bool HashSet(string key, string hashField, string value)
         {
-            return this.redisClient.SetEntryInHash(hashId, key, value);
+            return RedisDB.HashSet(key, hashField, value);
         }
-        public long TTL(string key)
+        public Dictionary<string, string> HashGetAll(string key)
         {
-            return this.redisClient.Ttl(key);
+            var hashEntrys = RedisDB.HashGetAll(key);
+            return hashEntrys.ToDictionary(h => h.Name.HasValue ? h.Name.ToString() : "", h => h.Value.HasValue ? h.Value.ToString() : "");
         }
-        private string GetKey(string key)
+        public TimeSpan? KeyTimeToLive(string key)
         {
-            if (string.IsNullOrWhiteSpace(key))
-                throw new ArgumentNullException("键不能为空");
-            if (key.Length > 250)
-                throw new ArgumentException("键值长度不能超过250位");
-            return key;
+            return RedisDB.KeyTimeToLive(key);
         }
     }
 }
