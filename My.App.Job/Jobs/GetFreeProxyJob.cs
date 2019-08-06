@@ -299,9 +299,11 @@ namespace My.App.Job
         void ValidProxyIps()
         {
             Console.WriteLine($"开始校验代理ip是否可用，当前需校验ip数量为{RawProxyIps.Count}");
+            int usefulProxyIpCount = 0;
             if (RawProxyIps.Count > 0)
             {
                 string checkUrl = "http://httpbin.org/ip";
+                var usefulProxyIps = new Dictionary<string,bool>();
                 foreach (var proxyIp in RawProxyIps.Keys)
                 {
                     try
@@ -310,7 +312,7 @@ namespace My.App.Job
                         if (resultIp.Contains("origin"))
                         {
                             RedisHelper.HashSet(IpProxyCacheKey, proxyIp, "0");
-                            RawProxyIps[proxyIp] = true;
+                            usefulProxyIps[proxyIp] = true;
                             Console.WriteLine($"代理IP：{proxyIp} 通过校验");
                         }
                     }
@@ -321,8 +323,9 @@ namespace My.App.Job
                     }
                     Console.WriteLine($"代理IP：{proxyIp} 未通过校验");
                 }
+                usefulProxyIpCount = usefulProxyIps.Count;
             }
-            Console.WriteLine($"结束校验代理ip是否可用，当前抓取可用ip数量为{RawProxyIps.Values.Count(x => x)}");
+            Console.WriteLine($"结束校验代理ip是否可用，当前抓取可用ip数量为{usefulProxyIpCount}");
         }
     }
 
