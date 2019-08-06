@@ -318,9 +318,9 @@ namespace My.App.Job
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine(ex.Message);
+                        // Console.WriteLine(ex.Message);
                         // Console.WriteLine(ex.ToString());
-                        Console.WriteLine($"代理IP：{proxyIp} 未通过校验");
+                        Console.WriteLine($"代理IP：{proxyIp} 未通过校验：{ex.Message}");
                     }
                 }
                 usefulProxyIpCount = usefulProxyIps.Count;
