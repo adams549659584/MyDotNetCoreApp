@@ -20,6 +20,7 @@ namespace My.App.Job
                    //services.AddHostedService<TestJob>();
                    services.AddHostedService<IpPushJob>();
                    services.AddHostedService<GetFreeProxyJob>();
+                   //services.AddHostedService<MpAppPreheatJob>();
                });
     }
 }

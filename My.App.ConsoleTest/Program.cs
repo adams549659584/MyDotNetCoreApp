@@ -7,7 +7,7 @@ namespace My.App.ConsoleTest
     {
         static void Main(string[] args)
         {
-            TestRedisHelper();
+            //TestRedisHelper();
             //TestLogHelper();
             //TestNotifyHelper();
             //TestUnicodeHelper();

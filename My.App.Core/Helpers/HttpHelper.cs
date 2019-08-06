@@ -17,7 +17,7 @@ namespace My.App.Core
         /// <param name="timeout">超时 单位/秒</param>
         /// <param name="proxy">代理</param>
         /// <returns></returns>
-        public static HttpResponseMessage GetResponse(string url, Dictionary<string,string> dictHeaders = null, int timeout = 0, IWebProxy proxy = null)
+        public static HttpResponseMessage GetResponse(string url, Dictionary<string, string> dictHeaders = null, int timeout = 0, IWebProxy proxy = null)
         {
             var handler = new HttpClientHandler()
             {
@@ -51,7 +51,7 @@ namespace My.App.Core
         /// <param name="timeout">超时 单位/秒</param>
         /// <param name="proxy">代理</param>
         /// <returns></returns>
-        public static string GetResponseString(string url, Dictionary<string,string> dictHeaders = null, int timeout = 0, IWebProxy proxy = null)
+        public static string GetResponseString(string url, Dictionary<string, string> dictHeaders = null, int timeout = 0, IWebProxy proxy = null)
         {
             var response = GetResponse(url, dictHeaders, timeout, proxy);
             string resultStr = response.Content.ReadAsStringAsync().Result;
