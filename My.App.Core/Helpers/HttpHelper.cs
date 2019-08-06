@@ -43,6 +43,10 @@ namespace My.App.Core
             {
                 throw response.ErrorException;
             }
+            if (response.StatusCode != HttpStatusCode.OK)
+            {
+                throw new Exception($"{response.StatusCode}:{response.StatusDescription}");
+            }
             return response;
         }
         public static string Get(string url, Dictionary<string, string> dictHeaders = null, int timeout = 0, IWebProxy proxy = null)

@@ -1,6 +1,7 @@
-﻿Cache-Control: max-age=0
+﻿Pragma: no-cache
+Cache-Control: no-cache
 Upgrade-Insecure-Requests: 1
-User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36
 Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8
 Accept-Language: zh-CN,zh;q=0.9
-Cookie: yd_cookie=2ead1cd0-34ef-426926dfe31316d329cb1fb692cf88221c16
+Cookie: yd_cookie=80882b8c-5bb4-435d19b4fe101d258af769ec4b7b885259e3
