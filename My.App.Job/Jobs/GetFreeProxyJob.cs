@@ -101,7 +101,7 @@ namespace My.App.Job
                         }
                         catch (Exception ex)
                         {
-                            Console.WriteLine(ex.Message);
+                            Console.WriteLine($"ihuan 使用代理Ip {currProxyIp} 异常： {ex.Message}");
                             // Console.WriteLine(ex.ToString());
                             // LogHelper.Log(ex);
                         }
@@ -211,7 +211,7 @@ namespace My.App.Job
                         }
                         catch (Exception ex)
                         {
-                            Console.WriteLine(ex.Message);
+                            Console.WriteLine($"89ip 使用代理Ip {currProxyIp} 异常： {ex.Message}");
                             // Console.WriteLine(ex.ToString());
                             // LogHelper.Log(ex);
                         }
