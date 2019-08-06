@@ -320,8 +320,8 @@ namespace My.App.Job
                     {
                         Console.WriteLine(ex.Message);
                         // Console.WriteLine(ex.ToString());
+                        Console.WriteLine($"代理IP：{proxyIp} 未通过校验");
                     }
-                    Console.WriteLine($"代理IP：{proxyIp} 未通过校验");
                 }
                 usefulProxyIpCount = usefulProxyIps.Count;
             }
