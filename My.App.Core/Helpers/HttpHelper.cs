@@ -26,7 +26,11 @@ namespace My.App.Core
             {
                 foreach (var headerKey in dictHeaders.Keys)
                 {
-                    restRequest.AddHeader(headerKey, dictHeaders[headerKey]);
+                    restClient.AddDefaultHeader(headerKey, dictHeaders[headerKey]);
+                    if (headerKey.ToLower().Equals("user-agent"))
+                    {
+                        restClient.UserAgent = dictHeaders[headerKey];
+                    }
                 }
             }
             return (restClient, restRequest);

@@ -1,6 +1,8 @@
-﻿Cache-Control: max-age=0
+﻿Pragma: no-cache
+Cache-Control: no-cache
 Upgrade-Insecure-Requests: 1
-User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36
 Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8
+Referer: https://ip.ihuan.me/
 Accept-Language: zh-CN,zh;q=0.9
-Cookie: __cfduid=d8e8f1682c99728b241de72c470ad33b21564984589
+Cookie: __cfduid=d1b7f48dcac5b2dbeb2b8a3d799bb576d1564902991; cf_clearance=766c8b7eb3e6efc030e48484bbf40301ce01d75b-1565105867-1800-250

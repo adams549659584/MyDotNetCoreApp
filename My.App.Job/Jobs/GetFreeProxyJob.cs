@@ -113,6 +113,8 @@ namespace My.App.Job
                     {
                         HeaderFilesIsExpried[headerFilePath] = true;
                         HeaderFilesLastWriteTime[headerFilePath] = fileLastWriteTime;
+                        Console.WriteLine("抓取免费IP代理作业 ihuan 异常：");
+                        Console.WriteLine(ipHtml);
                         NotifyHelper.Weixin("抓取免费IP代理作业 ihuan 异常", ipHtml);
                         return;
                     }
