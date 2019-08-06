@@ -45,7 +45,7 @@ namespace My.App.Core
             }
             if (response.StatusCode != HttpStatusCode.OK)
             {
-                throw new Exception($"{response.StatusCode}:{response.StatusDescription}");
+                throw new Exception($"{(int)response.StatusCode}:{response.StatusDescription}");
             }
             return response;
         }
