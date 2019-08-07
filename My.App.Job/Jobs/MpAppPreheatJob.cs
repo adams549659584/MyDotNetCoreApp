@@ -40,6 +40,8 @@ namespace My.App.Job
                              string productUrl = mpappUrl.Replace("pages/details/main", "http://mpapp.360kad.com/Product/Detail");
                              var result = HttpHelper.Get(productUrl);
                              Console.WriteLine($"{productUrl}ִ执行完毕");
+                             // 休眠200毫秒
+                             Task.Delay(200);
                          }
                      }
                      catch (Exception ex)
@@ -49,6 +51,7 @@ namespace My.App.Job
                  });
              }).ToArray();
             Task.WaitAll(tasks);
+
         }
     }
 }

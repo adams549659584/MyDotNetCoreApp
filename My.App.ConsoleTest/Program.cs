@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 
 namespace My.App.ConsoleTest
 {
@@ -14,7 +15,8 @@ namespace My.App.ConsoleTest
             //TestLogHelper();
             //TestNotifyHelper();
             //TestUnicodeHelper();
-            TestHttpHelper();
+            // TestHttpHelper();
+            TestTask();
             Console.ReadLine();
         }
 
@@ -67,7 +69,7 @@ namespace My.App.ConsoleTest
                     string headerFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config", "test_header.txt");
                     var headerStrs = ReadAllLines(headerFilePath);
                     var dictHeaders = headerStrs.Select(h => h.Split(new string[] { ": " }, StringSplitOptions.RemoveEmptyEntries)).ToDictionary(x => x[0], x => x[1]);
-                    var result = HttpHelper.Get("http://httpbin.org/ip", dictHeaders, 5*1000, new System.Net.WebProxy($"http://{proxyIp}"));
+                    var result = HttpHelper.Get("http://httpbin.org/ip", dictHeaders, 5 * 1000, new System.Net.WebProxy($"http://{proxyIp}"));
                     Console.WriteLine($"{proxyIp}:{result}");
                 }
                 catch (Exception ex)
@@ -76,7 +78,6 @@ namespace My.App.ConsoleTest
                 }
             }
         }
-
         static string[] ReadAllLines(string path)
         {
             if (File.Exists(path))
@@ -88,6 +89,15 @@ namespace My.App.ConsoleTest
                 Console.WriteLine($"文件【{path}】不存在");
             }
             return new string[0];
+        }
+
+        static void TestTask()
+        {
+            Console.WriteLine($"step1,线程ID：{Thread.CurrentThread.ManagedThreadId}");
+            AsyncDemo asyncDemo = new AsyncDemo();
+            //asyncDemo.AsyncSleep().Wait();//Wait会阻塞当前线程直到AsyncSleep返回
+            asyncDemo.AsyncSleep();//不会阻塞当前线程
+            Console.WriteLine($"step5，线程ID：{Thread.CurrentThread.ManagedThreadId}");
         }
     }
 }
