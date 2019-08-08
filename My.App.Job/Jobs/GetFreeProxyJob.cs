@@ -69,6 +69,7 @@ namespace My.App.Job
             {
                 if (page <= ProxyIpMaxPage)
                 {
+                    Console.WriteLine($"抓取免费IP代理作业开始抓取ihuan第{page}页:");
                     string getIpUrl = $"https://ip.ihuan.me{urlParams}";
                     string headerFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config", "ihuan_header.txt");
                     var fileLastWriteTime = File.GetLastWriteTime(headerFilePath);
@@ -141,10 +142,7 @@ namespace My.App.Job
                             var port = item.SelectSingleNode($"{item.XPath}//td[2]").InnerText;
                             Console.WriteLine($"抓取免费IP代理作业 ihuan 抓取到IP:{ip}:{port}");
                             // RedisHelper.Set(IpProxyCacheKey, $"{ip}:{port}", "1");
-                            lock (RawProxyIps)
-                            {
-                                RawProxyIps[$"{ip}:{port}"] = false;
-                            }
+                            RawProxyIps[$"{ip}:{port}"] = false;
                         }
                         catch (Exception ex)
                         {
@@ -168,7 +166,6 @@ namespace My.App.Job
                         }
                         if (nextPage > 0)
                         {
-                            Console.WriteLine($"抓取免费IP代理作业开始抓取ihuan第{nextPage}页:");
                             FreeProxyIHuan(href, nextPage, usefulProxyIps);
                             return;
                         }
@@ -191,6 +188,7 @@ namespace My.App.Job
             {
                 if (page <= ProxyIpMaxPage)
                 {
+                    Console.WriteLine($"抓取免费IP代理作业开始抓取89ip第{page}页:");
                     string getIpUrl = $"http://www.89ip.cn/index_{page}.html";
                     string headerFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config", "89ip_header.txt");
                     var fileLastWriteTime = File.GetLastWriteTime(headerFilePath);
@@ -264,10 +262,7 @@ namespace My.App.Job
                             var port = item.SelectSingleNode($"{item.XPath}//td[2]").InnerText.Trim();
                             Console.WriteLine($"抓取免费IP代理作业 89ip 抓取到IP:{ip}:{port}");
                             // RedisHelper.Set(IpProxyCacheKey, $"{ip}:{port}", "1");
-                            lock (RawProxyIps)
-                            {
-                                RawProxyIps[$"{ip}:{port}"] = false;
-                            }
+                            RawProxyIps[$"{ip}:{port}"] = false;
                         }
                         catch (Exception ex)
                         {
@@ -289,7 +284,6 @@ namespace My.App.Job
                         }
                         if (nextPage > 0)
                         {
-                            Console.WriteLine($"抓取免费IP代理作业开始抓取89ip第{nextPage}页:");
                             FreeProxy89Ip(nextPage, usefulProxyIps);
                             return;
                         }
