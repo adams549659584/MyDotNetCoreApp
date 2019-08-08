@@ -1,4 +1,5 @@
-﻿using My.App.Core;
+﻿using MongoDB.Driver;
+using My.App.Core;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -17,7 +18,8 @@ namespace My.App.ConsoleTest
             //TestUnicodeHelper();
             //TestHttpHelper();
             //TestTask();
-            TestDictHelper();
+            //TestDictHelper();
+            TestMongoDB();
             Console.ReadLine();
         }
 
@@ -106,8 +108,38 @@ namespace My.App.ConsoleTest
         {
             var dict = DictHelper.Get("My.App.ConsoleTest");
             var redisHelper = new RedisHelper();
-            var sub = redisHelper.RedisClient.GetSubscriber();
-            sub.Publish("My.App.Dict.Configs", "试试试试试试");
+            //var sub = redisHelper.RedisClient.GetSubscriber();
+            //sub.Publish("My.App.Dict.Configs", "试试试试试试");
         }
+
+        static void TestMongoDB()
+        {
+            //mongodb+srv://<username>:<password>@<cluster-address>/test?w=majority
+            //var connectionString = $"mongodb://mongodb:mongo.123456.db@192.168.124.10:27017";
+            var connectionString = $"mongodb://192.168.1.88:27019/Kad_Web";
+            var mongoDbService = new MongoDBServiceBase(connectionString, new MongoUrl(connectionString).DatabaseName);
+            //var lists = new List<MongoTestEnt>();
+            //for (int i = 0; i < 10; i++)
+            //{
+            //    lists.Add(new MongoTestEnt()
+            //    {
+            //        Id = Guid.NewGuid().ToString("N"),
+            //        Name = $"test{i}",
+            //        Age = i,
+            //        CreateTime = DateTime.Now
+            //    });
+            //}
+            //mongoDbService.InsertMany<MongoTestEnt>(lists);
+            var lists = mongoDbService.GetList<MongoTestEnt>();
+        }
+    }
+
+    public class MongoTestEnt
+    {
+        public string Id { get; set; }
+
+        public string Name { get; set; }
+        public int Age { get; set; }
+        public DateTime CreateTime { get; set; }
     }
 }
