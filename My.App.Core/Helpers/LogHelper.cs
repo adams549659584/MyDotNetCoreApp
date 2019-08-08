@@ -14,15 +14,16 @@ namespace My.App.Core
         {
             get
             {
-                string path = string.Empty;
-                //if (HttpContext.Current != null)
-                //{
-                //    path = Path.Combine(HttpContext.Current.Request.MapPath("~/"), "Logs");
-                //}
-                path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Logs");
-                if (!Directory.Exists(path))
-                    Directory.CreateDirectory(path);
-                return path;
+                return PathHelper.MapPath("Logs");
+                //string path = string.Empty;
+                ////if (HttpContext.Current != null)
+                ////{
+                ////    path = Path.Combine(HttpContext.Current.Request.MapPath("~/"), "Logs");
+                ////}
+                //path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Logs");
+                //if (!Directory.Exists(path))
+                //    Directory.CreateDirectory(path);
+                //return path;
             }
         }
 

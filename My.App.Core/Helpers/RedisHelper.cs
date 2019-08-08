@@ -11,7 +11,7 @@ namespace My.App.Core
         #region 初始化
         private string _configuration = string.Empty;
         private ConnectionMultiplexer _redisClient;
-        private ConnectionMultiplexer RedisClient
+        public ConnectionMultiplexer RedisClient
         {
             get
             {
@@ -24,7 +24,7 @@ namespace My.App.Core
             }
         }
 
-        private IDatabase RedisDB
+        public IDatabase RedisDB
         {
             get
             {
@@ -63,17 +63,32 @@ namespace My.App.Core
         {
             return RedisDB.KeyDelete(key);
         }
-
         public bool Delete(string[] keys)
         {
             var redisKeys = new RedisKey[keys.Length];
             keys.CopyTo(redisKeys, 0);
             return RedisDB.KeyDelete(redisKeys) > 0;
         }
+        public bool HashDelete(string key, string hashField)
+        {
+            return RedisDB.HashDelete(key, hashField);
+        }
+
+        public bool HashDelete(string key, string[] hashFields)
+        {
+            var redisValues = new RedisValue[hashFields.Length];
+            hashFields.CopyTo(redisValues, 0);
+            return RedisDB.HashDelete(key, redisValues) > 0;
+        }
 
         public bool Exists(string key)
         {
             return RedisDB.KeyExists(key);
+        }
+
+        public bool HashExists(string key, string hashField)
+        {
+            return RedisDB.HashExists(key, hashField);
         }
 
         public T Get<T>(string key)
@@ -100,6 +115,10 @@ namespace My.App.Core
         public bool HashSet(string key, string hashField, string value)
         {
             return RedisDB.HashSet(key, hashField, value);
+        }
+        public string HashGet(string key, string hashField)
+        {
+            return RedisDB.HashGet(key, hashField);
         }
         public Dictionary<string, string> HashGetAll(string key)
         {

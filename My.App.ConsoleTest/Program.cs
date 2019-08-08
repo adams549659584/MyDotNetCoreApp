@@ -15,8 +15,9 @@ namespace My.App.ConsoleTest
             //TestLogHelper();
             //TestNotifyHelper();
             //TestUnicodeHelper();
-            // TestHttpHelper();
-            TestTask();
+            //TestHttpHelper();
+            //TestTask();
+            TestDictHelper();
             Console.ReadLine();
         }
 
@@ -78,6 +79,7 @@ namespace My.App.ConsoleTest
                 }
             }
         }
+
         static string[] ReadAllLines(string path)
         {
             if (File.Exists(path))
@@ -98,6 +100,14 @@ namespace My.App.ConsoleTest
             //asyncDemo.AsyncSleep().Wait();//Wait会阻塞当前线程直到AsyncSleep返回
             asyncDemo.AsyncSleep();//不会阻塞当前线程
             Console.WriteLine($"step5，线程ID：{Thread.CurrentThread.ManagedThreadId}");
+        }
+
+        static void TestDictHelper()
+        {
+            var dict = DictHelper.Get("My.App.ConsoleTest");
+            var redisHelper = new RedisHelper();
+            var sub = redisHelper.RedisClient.GetSubscriber();
+            sub.Publish("My.App.Dict.Configs", "试试试试试试");
         }
     }
 }
