@@ -103,7 +103,7 @@ namespace My.App.Core
 #if (DEBUG)
             Console.WriteLine(logStr);
 #else
-            NotifyHelper.Weixin("MyDotNetCoreApp系统日志通知", logStr.Replace("\r\n", "     \r\n"));
+             NotifyHelper.Weixin("MyDotNetCoreApp系统日志通知", new MarkdownBuilder().AppendCode(logStr, "java"));
 #endif
         }
 
