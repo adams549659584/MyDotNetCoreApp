@@ -131,7 +131,7 @@ namespace My.App.Job
                         }
                         Console.WriteLine("抓取免费IP代理作业 ihuan 异常：");
                         Console.WriteLine(ipHtml);
-                        NotifyHelper.Weixin("抓取免费IP代理作业 ihuan 异常", ipHtml);
+                        NotifyHelper.Weixin("抓取免费IP代理作业 ihuan 异常", new MarkdownBuilder().AppendHtml(ipHtml));
                         return;
                     }
                     foreach (var item in ipTrs)
@@ -250,7 +250,7 @@ namespace My.App.Job
                             // HeaderFilesLastWriteTime[headerFilePath] = fileLastWriteTime;
                             Console.WriteLine("抓取免费IP代理作业 89ip 异常：");
                             Console.WriteLine(ipHtml);
-                            NotifyHelper.Weixin("抓取免费IP代理作业 89ip 异常", ipHtml);
+                            NotifyHelper.Weixin("抓取免费IP代理作业 89ip 异常", new MarkdownBuilder().AppendHtml(ipHtml));
                         }
                         return;
                     }
