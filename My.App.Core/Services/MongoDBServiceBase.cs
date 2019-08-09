@@ -44,12 +44,26 @@ namespace My.App.Core
         /// <typeparam name="T"></typeparam>
         /// <param name="list"></param>
         /// <returns></returns>
-        public List<T> InsertMany<T>(List<T> list)
+        public List<T> Insert<T>(List<T> list)
         {
             var collection = MongoDB.GetCollection<T>(typeof(T).Name);
             collection.InsertMany(list);
             return list;
         }
+
+        /// <summary>
+        /// 插入单条数据
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="ent"></param>
+        /// <returns></returns>
+        public T Insert<T>(T ent)
+        {
+            var collection = MongoDB.GetCollection<T>(typeof(T).Name);
+            collection.InsertOne(ent);
+            return ent;
+        }
+
         #endregion
     }
 }
