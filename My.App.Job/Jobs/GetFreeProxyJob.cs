@@ -154,7 +154,6 @@ namespace My.App.Job
                                 IP = ip,
                                 Port = port.ToInt(),
                                 Location = HttpUtility.HtmlDecode(location),
-                                IsSupportHttps = proxyType.Equals("支持"),
                                 Anonymity = anonymity
                             };
                             RawProxyIpList.Add(proxyIpEnt);
