@@ -1,4 +1,5 @@
 using System;
+using My.App.Core;
 
 namespace My.App.Job
 {
@@ -25,9 +26,9 @@ namespace My.App.Job
         public string Location { get; set; }
 
         /// <summary>
-        /// 类型 0-HTTP 1-HTTPS
+        /// 是否支持https
         /// </summary>
-        public int ProxyType { get; set; }
+        public bool IsSupportHttps { get; set; }
 
         /// <summary>
         /// 匿名程度
@@ -45,9 +46,14 @@ namespace My.App.Job
         public DateTime LastValidTime { get; set; }
 
         /// <summary>
-        /// 访问速度/毫秒
+        /// Http访问速度/毫秒
         /// </summary>
-        public int Speed { get; set; }
+        public double Speed { get; set; }
+
+        /// <summary>
+        /// Https访问速度/毫秒
+        /// </summary>
+        public double HttpsSpeed { get; set; }    
 
         /// <summary>
         /// 是否删除

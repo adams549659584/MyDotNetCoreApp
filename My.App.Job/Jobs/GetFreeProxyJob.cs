@@ -10,6 +10,8 @@ using System.Linq;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
+using System.Web;
+using System.Diagnostics;
 
 namespace My.App.Job
 {
@@ -19,7 +21,7 @@ namespace My.App.Job
         private static RedisHelper RedisHelper = new RedisHelper("dotnetcore_redis:6379");
         private static MongoDBServiceBase MongoDBServiceBase = new MongoDBServiceBase("MyJob");
         private static string IpProxyCacheKey = "useful_proxy";
-        private static int ProxyIpMaxPage = 30;//最大抓取页数
+        private static int ProxyIpMaxPage = 3;//最大抓取页数
 
         /// <summary>
         /// 头文件最后修改时间
@@ -39,6 +41,8 @@ namespace My.App.Job
         /// <returns></returns>
         private static Dictionary<string, bool> RawProxyIps = new Dictionary<string, bool>();
 
+        private static List<ProxyIpEnt> RawProxyIpList = new List<ProxyIpEnt>();
+
         public GetFreeProxyJob(ILogger<BaseJob> logger, IHostApplicationLifetime appLifetime) : base(JobTimerInterval, logger, appLifetime)
         {
             //base.Logger.Log(LogLevel.Debug, "测试作业启动");
@@ -52,8 +56,8 @@ namespace My.App.Job
             var dictProxyIps = RedisHelper.HashGetAll(IpProxyCacheKey);
             var usefulProxyIps = dictProxyIps.Keys.ToList();
             Task.WaitAll(
-                FreeProxyIHuan("", 1, usefulProxyIps.Clone()),
-                FreeProxy89Ip(1, usefulProxyIps.Clone())
+                Task.Run(()=> FreeProxyIHuan("", 1, usefulProxyIps.Clone())),
+                Task.Run(()=> FreeProxy89Ip(1, usefulProxyIps.Clone()))
                 );
             ValidProxyIps();
             RawProxyIps.Clear();
@@ -139,8 +143,21 @@ namespace My.App.Job
                     {
                         try
                         {
-                            var ip = item.SelectSingleNode($"{item.XPath}//td[1]//a").InnerText;
-                            var port = item.SelectSingleNode($"{item.XPath}//td[2]").InnerText;
+                            var ip = item.SelectSingleNode($"{item.XPath}//td[1]//a").InnerText.Trim();
+                            var port = item.SelectSingleNode($"{item.XPath}//td[2]").InnerText.Trim();
+                            var location = item.SelectSingleNode($"{item.XPath}//td[3]").InnerText.Trim();
+                            var proxyType = item.SelectSingleNode($"{item.XPath}//td[5]").InnerText.Trim();
+                            var anonymity = item.SelectSingleNode($"{item.XPath}//td[7]").InnerText.Trim();
+                            var proxyIpEnt = new ProxyIpEnt()
+                            {
+                                Id = Guid.NewGuid(),
+                                IP = ip,
+                                Port = port.ToInt(),
+                                Location = HttpUtility.HtmlDecode(location),
+                                IsSupportHttps = proxyType.Equals("支持"),
+                                Anonymity = anonymity
+                            };
+                            RawProxyIpList.Add(proxyIpEnt);
                             Console.WriteLine($"抓取免费IP代理作业 ihuan 抓取到IP:{ip}:{port}");
                             // RedisHelper.Set(IpProxyCacheKey, $"{ip}:{port}", "1");
                             RawProxyIps[$"{ip}:{port}"] = false;
@@ -262,6 +279,15 @@ namespace My.App.Job
                         {
                             var ip = item.SelectSingleNode($"{item.XPath}//td[1]").InnerText.Trim();
                             var port = item.SelectSingleNode($"{item.XPath}//td[2]").InnerText.Trim();
+                            var location = item.SelectSingleNode($"{item.XPath}//td[3]").InnerText.Trim();
+                            var proxyIpEnt = new ProxyIpEnt()
+                            {
+                                Id = Guid.NewGuid(),
+                                IP = ip,
+                                Port = port.ToInt(),
+                                Location = HttpUtility.HtmlDecode(location)
+                            };
+                            RawProxyIpList.Add(proxyIpEnt);
                             Console.WriteLine($"抓取免费IP代理作业 89ip 抓取到IP:{ip}:{port}");
                             // RedisHelper.Set(IpProxyCacheKey, $"{ip}:{port}", "1");
                             RawProxyIps[$"{ip}:{port}"] = false;
@@ -318,46 +344,87 @@ namespace My.App.Job
         /// </summary>
         void ValidProxyIps()
         {
-            Console.WriteLine($"开始校验代理ip是否可用，当前需校验ip数量为{RawProxyIps.Count}");
-            int usefulProxyIpCount = 0;
-            if (RawProxyIps.Count > 0)
+            Console.WriteLine($"开始校验代理ip是否可用，当前需校验ip数量为{RawProxyIpList.Count}");
+            if (RawProxyIpList.Count > 0)
             {
+                Stopwatch watch = new Stopwatch();
+                watch.Start();
                 int threadCount = 50;
-                int pageCount = (int)Math.Ceiling(RawProxyIps.Count / (decimal)threadCount);
-                var taskList = new Task<List<string>>[threadCount];
+                int pageCount = (int)Math.Ceiling(RawProxyIpList.Count / (decimal)threadCount);
+                // http
+                var httpTaskList = new Task<List<string>>[threadCount];
                 for (int i = 0; i < threadCount; i++)
                 {
-                    var proxyIps = RawProxyIps.Keys.Skip(i * pageCount).Take(pageCount).ToArray();
-                    taskList[i] = ValidProxyIps(proxyIps, ProxyCheckType.Http);
+                    var proxyIps = RawProxyIpList.Skip(i * pageCount).Take(pageCount).ToArray();
+                    httpTaskList[i] = ValidProxyIps(proxyIps, ProxyCheckType.Http);
                 }
-                var taskResults = Task.WhenAll(taskList).Result;
-                var usefulProxyIps = taskResults.SelectMany(x => x).ToList();
-                usefulProxyIpCount = usefulProxyIps.Count;
+                var httpTaskResults = Task.WhenAll(httpTaskList).Result;
+                watch.Stop();
+                var httpUsefulProxyIps = httpTaskResults.SelectMany(x => x).ToList();
+                Console.WriteLine($"全部代理IP({RawProxyIpList.Count})HTTP检查完毕，有效IP({httpUsefulProxyIps.Count})，耗时：{watch.Elapsed.TotalSeconds} 秒");
+
+                // https
+                watch.Restart();
+                var httpsTaskList = new Task<List<string>>[threadCount];
+                for (int i = 0; i < threadCount; i++)
+                {
+                    var proxyIps = RawProxyIpList.Skip(i * pageCount).Take(pageCount).ToArray();
+                    httpsTaskList[i] = ValidProxyIps(proxyIps, ProxyCheckType.Https);
+                }
+                var httpsTaskResults = Task.WhenAll(httpsTaskList).Result;
+                watch.Stop();
+                var httpsUsefulProxyIps = httpsTaskResults.SelectMany(x => x).ToList();
+                Console.WriteLine($"全部代理IP({RawProxyIpList.Count})HTTPS检查完毕，有效IP({httpsUsefulProxyIps.Count})，耗时：{watch.Elapsed.TotalSeconds} 秒");
             }
-            Console.WriteLine($"结束校验代理ip是否可用，当前共抓取IP数量：{RawProxyIps.Count}，可用IP数量：{usefulProxyIpCount}");
+            else
+            {
+                Console.WriteLine($"结束校验代理ip是否可用，当前共抓取IP数量：0");
+            }
         }
 
         void TestValidProxyIps()
         {
-            System.Diagnostics.Stopwatch watch = new System.Diagnostics.Stopwatch();
+            Stopwatch watch = new Stopwatch();
             watch.Start();
             int checkProxyIpCount = 12;
-            var RawProxyIps = RedisHelper.HashGetAll(IpProxyCacheKey).Keys.Take(checkProxyIpCount).ToList();
+            var RawProxyIps = RedisHelper.HashGetAll(IpProxyCacheKey).Keys.Take(checkProxyIpCount).Select(x => {
+                var ips = x.Split(":");
+                var ent = new ProxyIpEnt()
+                {
+                    IP = ips[0],
+                    Port = ips[1].ToInt()
+                };
+                return ent;
+            }).ToList();
             int threadCount = 12;
             int pageCount = (int)Math.Ceiling(RawProxyIps.Count / (decimal)threadCount);
-            var taskList = new Task<List<string>>[threadCount];
+            // http
+            var httpTaskList = new Task<List<string>>[threadCount];
             for (int i = 0; i < threadCount; i++)
             {
                 var proxyIps = RawProxyIps.Skip(i * pageCount).Take(pageCount).ToArray();
-                taskList[i] = ValidProxyIps(proxyIps, ProxyCheckType.Http);
+                httpTaskList[i] = ValidProxyIps(proxyIps, ProxyCheckType.Http);
             }
-            var taskResults = Task.WhenAll(taskList).Result;
+            var httpTaskResults = Task.WhenAll(httpTaskList).Result;
             watch.Stop();
-            var usefulProxyIps = taskResults.SelectMany(x => x).ToList();
-            Console.WriteLine($"全部代理IP({checkProxyIpCount})检查完毕，有效IP({usefulProxyIps.Count})，耗时：{watch.Elapsed.TotalSeconds} 秒");
+            var httpUsefulProxyIps = httpTaskResults.SelectMany(x => x).ToList();
+            Console.WriteLine($"全部代理IP({checkProxyIpCount})HTTP检查完毕，有效IP({httpUsefulProxyIps.Count})，耗时：{watch.Elapsed.TotalSeconds} 秒");
+            
+            // https
+            watch.Restart();
+            var httpsTaskList = new Task<List<string>>[threadCount];
+            for (int i = 0; i < threadCount; i++)
+            {
+                var proxyIps = RawProxyIps.Skip(i * pageCount).Take(pageCount).ToArray();
+                httpsTaskList[i] = ValidProxyIps(proxyIps, ProxyCheckType.Https);
+            }
+            var httpsTaskResults = Task.WhenAll(httpsTaskList).Result;
+            watch.Stop();
+            var httpsUsefulProxyIps = httpsTaskResults.SelectMany(x => x).ToList();
+            Console.WriteLine($"全部代理IP({checkProxyIpCount})HTTPS检查完毕，有效IP({httpsUsefulProxyIps.Count})，耗时：{watch.Elapsed.TotalSeconds} 秒");
         }
 
-        async Task<List<string>> ValidProxyIps(string[] rawProxyIps, ProxyCheckType proxyCheckType)
+        async Task<List<string>> ValidProxyIps(ProxyIpEnt[] rawProxyIps, ProxyCheckType proxyCheckType)
         {
             string checkUrl = string.Empty;
             switch (proxyCheckType)
@@ -373,23 +440,64 @@ namespace My.App.Job
             List<string> usefulProxyIps = new List<string>();
             await Task.Run(() =>
             {
-                foreach (var proxyIp in rawProxyIps)
+              System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
+                foreach (var proxyIpEnt in rawProxyIps)
                 {
                     try
                     {
-                        var resultIp = HttpHelper.Get(checkUrl, null, 5 * 1000, new WebProxy($"http://{proxyIp}"));
+                        stopwatch.Restart();
+                        var resultIp = HttpHelper.Get(checkUrl, null, 5 * 1000, new WebProxy($"http://{proxyIpEnt.IP}:{proxyIpEnt.Port}"));
+                        stopwatch.Stop();
                         if (resultIp.Contains("origin"))
                         {
-                            RedisHelper.HashSet(IpProxyCacheKey, proxyIp, "0");
-                            usefulProxyIps.Add(proxyIp);
-                            Console.WriteLine($"代理IP：{proxyIp} 通过{checkTypeName}校验");
+                            RedisHelper.HashSet(IpProxyCacheKey, $"{proxyIpEnt.IP}:{proxyIpEnt.Port}", "0");
+                            usefulProxyIps.Add( $"{proxyIpEnt.IP}:{proxyIpEnt.Port}");
+                            Console.WriteLine($"代理IP：{proxyIpEnt.IP}:{proxyIpEnt.Port} 通过{checkTypeName}校验");
+                            MongoDBServiceBase.GetList<ProxyIpEnt>(x => x.IP == proxyIpEnt.IP && x.Port == proxyIpEnt.Port)
+                            .ContinueWith(queryResult => {
+                                switch (proxyCheckType)
+                                {
+                                   case ProxyCheckType.Http:
+                                        proxyIpEnt.Speed = stopwatch.Elapsed.TotalMilliseconds;
+                                        break;
+                                   case ProxyCheckType.Https:
+                                        proxyIpEnt.HttpsSpeed = stopwatch.Elapsed.TotalMilliseconds;
+                                        proxyIpEnt.IsSupportHttps = true;
+                                        break;
+                                }
+                                
+                                proxyIpEnt.LastValidTime = DateTime.Now;
+                                if (queryResult.Result.Count == 0)
+                                {
+                                    proxyIpEnt.Id = Guid.NewGuid();
+                                    proxyIpEnt.CreateTime = DateTime.Now;
+                                    MongoDBServiceBase.Insert(proxyIpEnt)
+                                    .ContinueWith(insertResult => {
+                                        Console.WriteLine($"{proxyIpEnt.IP}:{proxyIpEnt.Port}插入mongodb成功");
+                                    });
+                                }
+                                else
+                                {
+                                    var oldProxyIpEnt = queryResult.Result.FirstOrDefault();
+                                    if (proxyCheckType == ProxyCheckType.Https)
+                                    {
+                                        proxyIpEnt.Speed = oldProxyIpEnt.Speed;
+                                    }
+                                    proxyIpEnt.Id = oldProxyIpEnt.Id;
+                                    proxyIpEnt.CreateTime = oldProxyIpEnt.CreateTime;
+                                    MongoDBServiceBase.Replace(proxyIpEnt)
+                                    .ContinueWith(replaceResult => {
+                                        Console.WriteLine($"{proxyIpEnt.IP}:{proxyIpEnt.Port}更新mongodb成功");
+                                    });
+                                }
+                            });
                         }
                     }
                     catch (Exception ex)
                     {
                         // Console.WriteLine(ex.Message);
                         // Console.WriteLine(ex.ToString());
-                        Console.WriteLine($"代理IP：{proxyIp} 未通过{checkTypeName}校验：{ex.Message}");
+                        Console.WriteLine($"代理IP：{proxyIpEnt.IP}:{proxyIpEnt.Port} 未通过{checkTypeName}校验：{ex.Message}");
                     }
                 }
             });

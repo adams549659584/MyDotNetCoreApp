@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace My.App.Core
 {
@@ -37,14 +38,15 @@ namespace My.App.Core
         /// <typeparam name="T"></typeparam>
         /// <param name="id"></param>
         /// <returns></returns>
-        public List<T> GetList<T>(Expression<Func<T, bool>> conditions = null)
+        public async Task<List<T>> GetList<T>(Expression<Func<T, bool>> conditions = null)
         {
             var collection = MongoDB.GetCollection<T>(typeof(T).Name);
-            if (conditions != null)
+            if (conditions == null)
             {
-                return collection.Find(conditions).ToList();
+                conditions = _ => true;
             }
-            return collection.Find(_ => true).ToList();
+            var result = await collection.FindAsync(conditions);
+            return result.ToList();
         }
         #endregion
 
@@ -54,10 +56,10 @@ namespace My.App.Core
         /// <typeparam name="T"></typeparam>
         /// <param name="list"></param>
         /// <returns></returns>
-        public List<T> Insert<T>(List<T> list)
+        public async Task<List<T>> Insert<T>(List<T> list)
         {
             var collection = MongoDB.GetCollection<T>(typeof(T).Name);
-            collection.InsertMany(list);
+            await collection.InsertManyAsync(list);
             return list;
         }
 
@@ -67,10 +69,19 @@ namespace My.App.Core
         /// <typeparam name="T"></typeparam>
         /// <param name="ent"></param>
         /// <returns></returns>
-        public T Insert<T>(T ent)
+        public async Task<T> Insert<T>(T ent)
         {
             var collection = MongoDB.GetCollection<T>(typeof(T).Name);
-            collection.InsertOne(ent);
+            await collection.InsertOneAsync(ent);
+            return ent;
+        }
+
+        public async Task<T> Replace<T>(T ent) where T: IMongoEnt
+        {
+            var collection = MongoDB.GetCollection<T>(typeof(T).Name);
+            var builder = Builders<T>.Filter;
+            var filter = builder.Eq(x => x.Id, ent.Id);
+            await collection.ReplaceOneAsync(filter, ent);
             return ent;
         }
 

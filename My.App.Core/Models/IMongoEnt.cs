@@ -1,6 +1,6 @@
 using System;
 
-namespace My.App.Job
+namespace My.App.Core
 {
     public interface IMongoEnt
     {
