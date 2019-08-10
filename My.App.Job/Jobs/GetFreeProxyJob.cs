@@ -42,6 +42,14 @@ namespace My.App.Job
 
         private static List<ProxyIpEnt> RawProxyIpList = new List<ProxyIpEnt>();
 
+        private static string CurrentIp 
+        {
+            get
+            {
+                return RedisHelper.Get<string>("My.App.Job.IpPush.LastIp");
+            }
+        } 
+
         public GetFreeProxyJob(ILogger<BaseJob> logger, IHostApplicationLifetime appLifetime) : base(JobTimerInterval, logger, appLifetime)
         {
             //base.Logger.Log(LogLevel.Debug, "测试作业启动");
@@ -465,7 +473,7 @@ namespace My.App.Job
                                         proxyIpEnt.IsSupportHttps = true;
                                         break;
                                 }
-                                
+                                proxyIpEnt.Anonymity = resultIp.Contains(CurrentIp) ? "透明":"高匿";
                                 proxyIpEnt.LastValidTime = DateTime.Now;
                                 if (queryResult.Result.Count == 0)
                                 {
