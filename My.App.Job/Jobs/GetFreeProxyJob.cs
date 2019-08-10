@@ -500,6 +500,7 @@ namespace My.App.Job
                         Console.WriteLine($"代理IP：{proxyIpEnt.IP}:{proxyIpEnt.Port} 未通过{checkTypeName}校验：{ex.Message}");
                     }
                 }
+                return Task.CompletedTask;
             });
             return usefulProxyIps;
         }
