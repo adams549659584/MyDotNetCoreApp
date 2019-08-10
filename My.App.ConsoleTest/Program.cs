@@ -124,6 +124,13 @@ namespace My.App.ConsoleTest
                 Value = "30",
                 Desc = "89Ip代理ip最大抓取页数"
             });
+            string dictKeyXiLa = "My.App.Job.GetFreeProxyJob.ProxyIpMaxPage.XiLa";
+            DictHelper.Update(new DictEnt()
+            {
+                Key = dictKeyXiLa,
+                Value = "660",
+                Desc = "西拉免费代理IP最大抓取页数"
+            });
         }
 
         static void TestMongoDB()

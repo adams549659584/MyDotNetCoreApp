@@ -64,7 +64,8 @@ namespace My.App.Job
             var usefulProxyIps = dictProxyIps.Keys.ToList();
             Task.WaitAll(
                 Task.Run(()=> FreeProxyIHuan("", 1, usefulProxyIps.Clone())),
-                Task.Run(()=> FreeProxy89Ip(1, usefulProxyIps.Clone()))
+                Task.Run(()=> FreeProxy89Ip(1, usefulProxyIps.Clone())),
+                Task.Run(()=> FreeProxyXiLa(1, usefulProxyIps.Clone()))
                 );
             ValidProxyIps();
             RawProxyIps.Clear();
@@ -183,7 +184,7 @@ namespace My.App.Job
                         for (int i = 1; i < pageEles.Count; i++)
                         {
                             href = pageEles[i].GetAttributeValue("href", "");
-                            int.TryParse(pageEles[i].InnerText, out nextPage);
+                            nextPage = pageEles[i].InnerText.ToInt(nextPage);
                             if (nextPage > page)
                             {
                                 break;
@@ -312,7 +313,7 @@ namespace My.App.Job
                         int nextPage = 0;
                         for (int i = 1; i < (pageEles.Count - 1); i++)
                         {
-                            int.TryParse(pageEles[i].InnerText, out nextPage);
+                            nextPage = pageEles[i].InnerText.ToInt(nextPage);
                             if (nextPage > page)
                             {
                                 break;
@@ -326,6 +327,138 @@ namespace My.App.Job
                     }
                 }
                 Console.WriteLine($"抓取免费IP代理作业抓取89ip结束");
+            }
+            catch (Exception ex)
+            {
+                LogHelper.Log(ex);
+            }
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// http://www.xiladaili.com/gaoni/
+        /// </summary>
+        /// <returns></returns>
+        Task FreeProxyXiLa(int page = 1, List<string> usefulProxyIps = null)
+        {
+            try
+            {
+                var proxyIpMaxPage = DictHelper.GetValue("My.App.Job.GetFreeProxyJob.ProxyIpMaxPage.XiLa").ToInt(5);
+                if (page <= proxyIpMaxPage)
+                {
+                    Console.WriteLine($"抓取免费IP代理作业开始抓取XiLa第{page}页:");
+                    string getIpUrl = $"http://www.xiladaili.com/gaoni/{page}/";
+                    string headerFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config", "xila_header.txt");
+                    var fileLastWriteTime = File.GetLastWriteTime(headerFilePath);
+                    bool HeaderFileIsExpried = false;
+                    DateTime HeaderFileLastWriteTime = DateTime.MinValue;
+                    if (!HeaderFilesIsExpried.ContainsKey(headerFilePath))
+                    {
+                        lock (HeaderFilesIsExpried)
+                        {
+                            HeaderFilesIsExpried[headerFilePath] = HeaderFileIsExpried;
+                        }
+                    }
+                    if (!HeaderFilesLastWriteTime.ContainsKey(headerFilePath))
+                    {
+                        lock (HeaderFilesLastWriteTime)
+                        {
+                            HeaderFilesLastWriteTime[headerFilePath] = HeaderFileLastWriteTime;
+                        }
+                    }
+                    if (HeaderFileIsExpried && fileLastWriteTime <= HeaderFileLastWriteTime)
+                    {
+                        Console.WriteLine($"抓取免费IP代理作业异常：XiLa cookie 文件头未更新最新，暂不执行作业！");
+                        return Task.CompletedTask;
+                    }
+                    var headerStrs = ReadAllLines(headerFilePath);
+                    var dictHeaders = headerStrs.Select(h => h.Split(new string[] { ": " }, StringSplitOptions.RemoveEmptyEntries)).ToDictionary(x => x[0], x => x[1]);
+                    string ipHtml = string.Empty;
+                    var tempProxyIps = new string[usefulProxyIps.Count];
+                    usefulProxyIps.CopyTo(tempProxyIps);
+                    foreach (var currProxyIp in tempProxyIps)
+                    {
+                        try
+                        {
+                            Console.WriteLine($"抓取免费IP代理作业 XiLa 当前使用代理Ip：{currProxyIp}");
+                            ipHtml = HttpHelper.Get(getIpUrl, dictHeaders, 10 * 1000, new WebProxy($"http://{currProxyIp}"));
+                            usefulProxyIps.RemoveAll(x => x == currProxyIp);
+                            usefulProxyIps.Insert(0, currProxyIp);
+                            break;
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"XiLa 使用代理Ip {currProxyIp} 异常： {ex.Message}");
+                            // Console.WriteLine(ex.ToString());
+                            // LogHelper.Log(ex);
+                        }
+                    }
+                    var htmlDoc = new HtmlDocument();
+                    htmlDoc.LoadHtml(ipHtml);
+                    var ipTrs = htmlDoc.DocumentNode.SelectNodes("//html//body//div//div[3]//div[2]//table//tbody//tr");
+                    if (ipTrs == null)
+                    {
+                        if (ipHtml.Contains("高匿ip非国外免费代理服务器"))
+                        {
+                            Console.WriteLine($"抓取免费IP代理作业抓取XiLa结束");
+                        }
+                        else
+                        {
+                            // HeaderFilesIsExpried[headerFilePath] = true;
+                            // HeaderFilesLastWriteTime[headerFilePath] = fileLastWriteTime;
+                            Console.WriteLine("抓取免费IP代理作业 XiLa 异常：");
+                            Console.WriteLine(ipHtml);
+                            NotifyHelper.Weixin("抓取免费IP代理作业 XiLa 异常", new MarkdownBuilder().AppendHtml(ipHtml));
+                        }
+                        return Task.CompletedTask;
+                    }
+                    foreach (var item in ipTrs)
+                    {
+                        try
+                        {
+                            var ipAndPort = item.SelectSingleNode($"{item.XPath}//td[1]").InnerText.Trim();
+                            var ipAndPortArr = ipAndPort.Split(new char[] {':'},StringSplitOptions.RemoveEmptyEntries);
+                            var ip = ipAndPortArr[0];
+                            var port = ipAndPortArr[1];
+                            var location = item.SelectSingleNode($"{item.XPath}//td[4]").InnerText.Trim();
+                            var proxyIpEnt = new ProxyIpEnt()
+                            {
+                                Id = Guid.NewGuid(),
+                                IP = ip,
+                                Port = port.ToInt(),
+                                Location = HttpUtility.HtmlDecode(location)
+                            };
+                            RawProxyIpList.Add(proxyIpEnt);
+                            Console.WriteLine($"抓取免费IP代理作业 XiLa 抓取到IP:{ipAndPort}");
+                            // RedisHelper.Set(IpProxyCacheKey, $"{ipAndPort}", "1");
+                            RawProxyIps[$"{ipAndPort}"] = false;
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine(ex.ToString());
+                            // LogHelper.Log(ex);
+                        }
+                    }
+                    var pageEles = htmlDoc.DocumentNode.SelectNodes("//html//body//div//div[3]//nav//ul//li//a");
+                    if (pageEles.Count > 2)
+                    {
+                        int nextPage = 0;
+                        for (int i = 1; i < (pageEles.Count - 1); i++)
+                        {
+                            nextPage = pageEles[i].InnerText.ToInt(nextPage);
+                            if (nextPage > page)
+                            {
+                                break;
+                            }
+                        }
+                        if (nextPage > 0)
+                        {
+                            FreeProxyXiLa(nextPage, usefulProxyIps);
+                            return Task.CompletedTask;
+                        }
+                    }
+                }
+                Console.WriteLine($"抓取免费IP代理作业抓取XiLa结束");
             }
             catch (Exception ex)
             {
