@@ -19,7 +19,7 @@ namespace My.App.ConsoleTest
             //TestHttpHelper();
             //TestTask();
             //TestDictHelper();
-            TestMongoDB();
+            //TestMongoDB();
             Console.ReadLine();
         }
 

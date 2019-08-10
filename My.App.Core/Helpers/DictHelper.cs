@@ -43,6 +43,17 @@ namespace My.App.Core
             }
             return JsonHelper.Deserialize<DictEnt>(dictText);
         }
+
+        public static string GetValue(string key)
+        {
+            var dict = Get(key);
+            if (dict == null)
+            {
+                return string.Empty;
+            }
+            return dict.Value;
+        }
+
         public static List<DictEnt> GetAll()
         {
             var dictConfigs = RedisHelper.HashGetAll(DictCacheKey);

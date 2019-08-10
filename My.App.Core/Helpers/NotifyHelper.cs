@@ -2,12 +2,12 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Web;
 
 namespace My.App.Core
 {
     public class NotifyHelper
     {
-
         /// <summary>
         /// 通知到微信
         /// </summary>
@@ -16,9 +16,8 @@ namespace My.App.Core
         /// <returns></returns>
         public static bool Weixin(string title, string body = "")
         {
-            #if DEBUG
-                return false;
-            #endif
+            title = HttpUtility.UrlEncode(title);
+            body = HttpUtility.UrlEncode(body);
             string url = $"https://sc.ftqq.com/SCU33276T4801adab529b3595e3dc25d37cbe38a35bb5f40021bbd.send?text={title}&desp={body}";
             //{"errno":0,"errmsg":"success","dataset":"done"}
             //{"errno":1024,"errmsg":"\u4e0d\u8981\u91cd\u590d\u53d1\u9001\u540c\u6837\u7684\u5185\u5bb9"}
@@ -29,6 +28,21 @@ namespace My.App.Core
                 throw new Exception(fangTangResult.ErrMsg);
             }
             return true;
+        }
+
+        /// <summary>
+        /// 通知到微信
+        /// </summary>
+        /// <param name="title">消息标题，最长为256，必填</param>
+        /// <param name="body">消息内容，最长64Kb</param>
+        /// <returns></returns>
+        public static bool Weixin(string title, MarkdownBuilder body)
+        {
+            if (body == null)
+            {
+                throw new Exception("markdown 不可为空");
+            }
+            return Weixin(title, body.ToString());
         }
     }
 
