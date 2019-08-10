@@ -2,12 +2,12 @@ using System;
 
 namespace My.App.Job
 {
-    public class ProxyIpEnt
+    public class ProxyIpEnt: IMongoEnt
     {
         /// <summary>
         /// ID
         /// </summary>
-        public string ID { get; set; }
+        public Guid Id { get; set; }
 
         /// <summary>
         /// IP

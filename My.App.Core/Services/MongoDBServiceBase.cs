@@ -8,6 +8,12 @@ namespace My.App.Core
 {
     public class MongoDBServiceBase
     {
+        private static string DefaultConnectionString { 
+            get
+            {
+                return $"mongodb://mongodb:mongo.123456.db@192.168.124.10:27017";
+            } 
+        }
         protected IMongoDatabase MongoDB { get; }
 
         public MongoDBServiceBase(string connectionString, string dbName)
@@ -18,6 +24,10 @@ namespace My.App.Core
                 throw new Exception($"mongo连接失败，连接字符串:{connectionString}");
             }
             MongoDB = client.GetDatabase(dbName);
+        }
+
+        public MongoDBServiceBase(string dbName):this(DefaultConnectionString, dbName)
+        {
         }
 
         #region SELECT

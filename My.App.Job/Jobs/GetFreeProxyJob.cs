@@ -17,6 +17,7 @@ namespace My.App.Job
     {
         private static TimeSpan JobTimerInterval = TimeSpan.FromMinutes(20);
         private static RedisHelper RedisHelper = new RedisHelper("dotnetcore_redis:6379");
+        private static MongoDBServiceBase MongoDBServiceBase = new MongoDBServiceBase("MyJob");
         private static string IpProxyCacheKey = "useful_proxy";
         private static int ProxyIpMaxPage = 30;//最大抓取页数
 
@@ -51,8 +52,8 @@ namespace My.App.Job
             var dictProxyIps = RedisHelper.HashGetAll(IpProxyCacheKey);
             var usefulProxyIps = dictProxyIps.Keys.ToList();
             Task.WaitAll(
-                Task.Run(() => FreeProxyIHuan("", 1, usefulProxyIps.Clone())),
-                Task.Run(() => FreeProxy89Ip(1, usefulProxyIps.Clone()))
+                FreeProxyIHuan("", 1, usefulProxyIps.Clone()),
+                FreeProxy89Ip(1, usefulProxyIps.Clone())
                 );
             ValidProxyIps();
             RawProxyIps.Clear();
@@ -63,7 +64,7 @@ namespace My.App.Job
         /// <summary>
         /// https://ip.ihuan.me
         /// </summary>
-        void FreeProxyIHuan(string urlParams = "", int page = 1, List<string> usefulProxyIps = null)
+        Task FreeProxyIHuan(string urlParams = "", int page = 1, List<string> usefulProxyIps = null)
         {
             try
             {
@@ -92,7 +93,7 @@ namespace My.App.Job
                     if (HeaderFileIsExpried && fileLastWriteTime <= HeaderFileLastWriteTime)
                     {
                         Console.WriteLine($"抓取免费IP代理作业异常：ihuan cookie 文件头未更新最新，暂不执行作业！");
-                        return;
+                        return Task.CompletedTask;
                     }
                     var headerStrs = ReadAllLines(headerFilePath);
                     var dictHeaders = headerStrs.Select(h => h.Split(new string[] { ": " }, StringSplitOptions.RemoveEmptyEntries)).ToDictionary(x => x[0], x => x[1]);
@@ -132,7 +133,7 @@ namespace My.App.Job
                         Console.WriteLine("抓取免费IP代理作业 ihuan 异常：");
                         Console.WriteLine(ipHtml);
                         NotifyHelper.Weixin("抓取免费IP代理作业 ihuan 异常", ipHtml);
-                        return;
+                        return Task.CompletedTask;
                     }
                     foreach (var item in ipTrs)
                     {
@@ -167,7 +168,7 @@ namespace My.App.Job
                         if (nextPage > 0)
                         {
                             FreeProxyIHuan(href, nextPage, usefulProxyIps);
-                            return;
+                            return Task.CompletedTask;
                         }
                     }
                 }
@@ -177,12 +178,13 @@ namespace My.App.Job
             {
                 LogHelper.Log(ex);
             }
+            return Task.CompletedTask;
         }
 
         /// <summary>
         /// http://www.89ip.cn/index_1.html
         /// </summary>
-        void FreeProxy89Ip(int page = 1, List<string> usefulProxyIps = null)
+        Task FreeProxy89Ip(int page = 1, List<string> usefulProxyIps = null)
         {
             try
             {
@@ -211,7 +213,7 @@ namespace My.App.Job
                     if (HeaderFileIsExpried && fileLastWriteTime <= HeaderFileLastWriteTime)
                     {
                         Console.WriteLine($"抓取免费IP代理作业异常：89ip cookie 文件头未更新最新，暂不执行作业！");
-                        return;
+                        return Task.CompletedTask;
                     }
                     var headerStrs = ReadAllLines(headerFilePath);
                     var dictHeaders = headerStrs.Select(h => h.Split(new string[] { ": " }, StringSplitOptions.RemoveEmptyEntries)).ToDictionary(x => x[0], x => x[1]);
@@ -252,7 +254,7 @@ namespace My.App.Job
                             Console.WriteLine(ipHtml);
                             NotifyHelper.Weixin("抓取免费IP代理作业 89ip 异常", ipHtml);
                         }
-                        return;
+                        return Task.CompletedTask;
                     }
                     foreach (var item in ipTrs)
                     {
@@ -285,7 +287,7 @@ namespace My.App.Job
                         if (nextPage > 0)
                         {
                             FreeProxy89Ip(nextPage, usefulProxyIps);
-                            return;
+                            return Task.CompletedTask;
                         }
                     }
                 }
@@ -295,6 +297,7 @@ namespace My.App.Job
             {
                 LogHelper.Log(ex);
             }
+            return Task.CompletedTask;
         }
 
         string[] ReadAllLines(string path)
