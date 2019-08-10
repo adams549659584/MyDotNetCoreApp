@@ -21,7 +21,6 @@ namespace My.App.Job
         private static RedisHelper RedisHelper = new RedisHelper("dotnetcore_redis:6379");
         private static MongoDBServiceBase MongoDBServiceBase = new MongoDBServiceBase("MyJob");
         private static string IpProxyCacheKey = "useful_proxy";
-        private static int ProxyIpMaxPage = 3;//最大抓取页数
 
         /// <summary>
         /// 头文件最后修改时间
@@ -72,7 +71,8 @@ namespace My.App.Job
         {
             try
             {
-                if (page <= ProxyIpMaxPage)
+                var proxyIpMaxPage = DictHelper.GetValue("My.App.Job.GetFreeProxyJob.ProxyIpMaxPage.IHuan").ToInt(5);
+                if (page <= proxyIpMaxPage)
                 {
                     Console.WriteLine($"抓取免费IP代理作业开始抓取ihuan第{page}页:");
                     string getIpUrl = $"https://ip.ihuan.me{urlParams}";
@@ -205,7 +205,8 @@ namespace My.App.Job
         {
             try
             {
-                if (page <= ProxyIpMaxPage)
+                var proxyIpMaxPage = DictHelper.GetValue("My.App.Job.GetFreeProxyJob.ProxyIpMaxPage.89Ip").ToInt(5);
+                if (page <= proxyIpMaxPage)
                 {
                     Console.WriteLine($"抓取免费IP代理作业开始抓取89ip第{page}页:");
                     string getIpUrl = $"http://www.89ip.cn/index_{page}.html";

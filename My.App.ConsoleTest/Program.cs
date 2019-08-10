@@ -18,7 +18,7 @@ namespace My.App.ConsoleTest
             //TestUnicodeHelper();
             //TestHttpHelper();
             //TestTask();
-            //TestDictHelper();
+            TestDictHelper();
             //TestMongoDB();
             Console.ReadLine();
         }
@@ -106,10 +106,24 @@ namespace My.App.ConsoleTest
 
         static void TestDictHelper()
         {
-            var dict = DictHelper.Get("My.App.ConsoleTest");
-            var redisHelper = new RedisHelper();
+            // var dict = DictHelper.Get("My.App.ConsoleTest");
+            // var redisHelper = new RedisHelper();
             //var sub = redisHelper.RedisClient.GetSubscriber();
             //sub.Publish("My.App.Dict.Configs", "试试试试试试");
+            string dictKeyIHuan = "My.App.Job.GetFreeProxyJob.ProxyIpMaxPage.IHuan";
+            DictHelper.Update(new DictEnt()
+            {
+                Key = dictKeyIHuan,
+                Value = "30",
+                Desc = "IHuan代理ip最大抓取页数"
+            });
+            string dictKey89Ip = "My.App.Job.GetFreeProxyJob.ProxyIpMaxPage.89Ip";
+            DictHelper.Update(new DictEnt()
+            {
+                Key = dictKey89Ip,
+                Value = "30",
+                Desc = "89Ip代理ip最大抓取页数"
+            });
         }
 
         static void TestMongoDB()
