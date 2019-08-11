@@ -76,7 +76,7 @@ namespace My.App.Job
         /// <summary>
         /// https://ip.ihuan.me
         /// </summary>
-        Task FreeProxyIHuan(string urlParams = "", int page = 1, List<string> usefulProxyIps = null)
+        async Task FreeProxyIHuan(string urlParams = "", int page = 1, List<string> usefulProxyIps = null)
         {
             try
             {
@@ -106,7 +106,7 @@ namespace My.App.Job
                     if (HeaderFileIsExpried && fileLastWriteTime <= HeaderFileLastWriteTime)
                     {
                         Console.WriteLine($"抓取免费IP代理作业异常：ihuan cookie 文件头未更新最新，暂不执行作业！");
-                        return Task.CompletedTask;
+                        return;
                     }
                     var headerStrs = ReadAllLines(headerFilePath);
                     var dictHeaders = headerStrs.Select(h => h.Split(new string[] { ": " }, StringSplitOptions.RemoveEmptyEntries)).ToDictionary(x => x[0], x => x[1]);
@@ -118,7 +118,7 @@ namespace My.App.Job
                         try
                         {
                             Console.WriteLine($"抓取免费IP代理作业 ihuan 当前使用代理Ip：{currProxyIp}");
-                            ipHtml = HttpHelper.Get(getIpUrl, dictHeaders, 10 * 1000, new WebProxy($"http://{currProxyIp}"));
+                            ipHtml = await HttpHelper.GetAsync(getIpUrl, dictHeaders, 10 * 1000, new WebProxy($"http://{currProxyIp}"));
                             usefulProxyIps.RemoveAll(x => x == currProxyIp);
                             usefulProxyIps.Insert(0, currProxyIp);
                             break;
@@ -146,7 +146,7 @@ namespace My.App.Job
                         Console.WriteLine("抓取免费IP代理作业 ihuan 异常：");
                         Console.WriteLine(ipHtml);
                         NotifyHelper.Weixin("抓取免费IP代理作业 ihuan 异常", new MarkdownBuilder().AppendHtml(ipHtml));
-                        return Task.CompletedTask;
+                        return;
                     }
                     foreach (var item in ipTrs)
                     {
@@ -192,8 +192,8 @@ namespace My.App.Job
                         }
                         if (nextPage > 0)
                         {
-                            FreeProxyIHuan(href, nextPage, usefulProxyIps);
-                            return Task.CompletedTask;
+                            await FreeProxyIHuan(href, nextPage, usefulProxyIps);
+                            return ;
                         }
                     }
                 }
@@ -203,13 +203,12 @@ namespace My.App.Job
             {
                 LogHelper.Log(ex);
             }
-            return Task.CompletedTask;
         }
 
         /// <summary>
         /// http://www.89ip.cn/index_1.html
         /// </summary>
-        Task FreeProxy89Ip(int page = 1, List<string> usefulProxyIps = null)
+        async Task FreeProxy89Ip(int page = 1, List<string> usefulProxyIps = null)
         {
             try
             {
@@ -239,7 +238,7 @@ namespace My.App.Job
                     if (HeaderFileIsExpried && fileLastWriteTime <= HeaderFileLastWriteTime)
                     {
                         Console.WriteLine($"抓取免费IP代理作业异常：89ip cookie 文件头未更新最新，暂不执行作业！");
-                        return Task.CompletedTask;
+                        return;
                     }
                     var headerStrs = ReadAllLines(headerFilePath);
                     var dictHeaders = headerStrs.Select(h => h.Split(new string[] { ": " }, StringSplitOptions.RemoveEmptyEntries)).ToDictionary(x => x[0], x => x[1]);
@@ -251,7 +250,7 @@ namespace My.App.Job
                         try
                         {
                             Console.WriteLine($"抓取免费IP代理作业 89ip 当前使用代理Ip：{currProxyIp}");
-                            ipHtml = HttpHelper.Get(getIpUrl, dictHeaders, 10 * 1000, new WebProxy($"http://{currProxyIp}"));
+                            ipHtml = await HttpHelper.GetAsync(getIpUrl, dictHeaders, 10 * 1000, new WebProxy($"http://{currProxyIp}"));
                             usefulProxyIps.RemoveAll(x => x == currProxyIp);
                             usefulProxyIps.Insert(0, currProxyIp);
                             break;
@@ -280,7 +279,7 @@ namespace My.App.Job
                             Console.WriteLine(ipHtml);
                             NotifyHelper.Weixin("抓取免费IP代理作业 89ip 异常", new MarkdownBuilder().AppendHtml(ipHtml));
                         }
-                        return Task.CompletedTask;
+                        return;
                     }
                     foreach (var item in ipTrs)
                     {
@@ -321,8 +320,8 @@ namespace My.App.Job
                         }
                         if (nextPage > 0)
                         {
-                            FreeProxy89Ip(nextPage, usefulProxyIps);
-                            return Task.CompletedTask;
+                            await FreeProxy89Ip(nextPage, usefulProxyIps);
+                            return;
                         }
                     }
                 }
@@ -332,14 +331,13 @@ namespace My.App.Job
             {
                 LogHelper.Log(ex);
             }
-            return Task.CompletedTask;
         }
 
         /// <summary>
         /// http://www.xiladaili.com/gaoni/
         /// </summary>
         /// <returns></returns>
-        Task FreeProxyXiLa(int page = 1, List<string> usefulProxyIps = null)
+        async Task FreeProxyXiLa(int page = 1, List<string> usefulProxyIps = null)
         {
             try
             {
@@ -369,7 +367,7 @@ namespace My.App.Job
                     if (HeaderFileIsExpried && fileLastWriteTime <= HeaderFileLastWriteTime)
                     {
                         Console.WriteLine($"抓取免费IP代理作业异常：XiLa cookie 文件头未更新最新，暂不执行作业！");
-                        return Task.CompletedTask;
+                        return;
                     }
                     var headerStrs = ReadAllLines(headerFilePath);
                     var dictHeaders = headerStrs.Select(h => h.Split(new string[] { ": " }, StringSplitOptions.RemoveEmptyEntries)).ToDictionary(x => x[0], x => x[1]);
@@ -381,7 +379,7 @@ namespace My.App.Job
                         try
                         {
                             Console.WriteLine($"抓取免费IP代理作业 XiLa 当前使用代理Ip：{currProxyIp}");
-                            ipHtml = HttpHelper.Get(getIpUrl, dictHeaders, 10 * 1000, new WebProxy($"http://{currProxyIp}"));
+                            ipHtml = await HttpHelper.GetAsync(getIpUrl, dictHeaders, 10 * 1000, new WebProxy($"http://{currProxyIp}"));
                             usefulProxyIps.RemoveAll(x => x == currProxyIp);
                             usefulProxyIps.Insert(0, currProxyIp);
                             break;
@@ -410,7 +408,7 @@ namespace My.App.Job
                             Console.WriteLine(ipHtml);
                             NotifyHelper.Weixin("抓取免费IP代理作业 XiLa 异常", new MarkdownBuilder().AppendHtml(ipHtml));
                         }
-                        return Task.CompletedTask;
+                        return;
                     }
                     foreach (var item in ipTrs)
                     {
@@ -453,8 +451,8 @@ namespace My.App.Job
                         }
                         if (nextPage > 0)
                         {
-                            FreeProxyXiLa(nextPage, usefulProxyIps);
-                            return Task.CompletedTask;
+                            await FreeProxyXiLa(nextPage, usefulProxyIps);
+                            return;
                         }
                     }
                 }
@@ -464,7 +462,6 @@ namespace My.App.Job
             {
                 LogHelper.Log(ex);
             }
-            return Task.CompletedTask;
         }
 
         string[] ReadAllLines(string path)
@@ -497,7 +494,7 @@ namespace My.App.Job
                 for (int i = 0; i < threadCount; i++)
                 {
                     var proxyIps = RawProxyIpList.Skip(i * pageCount).Take(pageCount).ToArray();
-                    httpTaskList[i] = ValidProxyIps(proxyIps, ProxyCheckType.Http);
+                    httpTaskList[i] = Task.Run(() => ValidProxyIps(proxyIps, ProxyCheckType.Http));
                 }
                 var httpTaskResults = Task.WhenAll(httpTaskList).Result;
                 watch.Stop();
@@ -510,7 +507,7 @@ namespace My.App.Job
                 for (int i = 0; i < threadCount; i++)
                 {
                     var proxyIps = RawProxyIpList.Skip(i * pageCount).Take(pageCount).ToArray();
-                    httpsTaskList[i] = ValidProxyIps(proxyIps, ProxyCheckType.Https);
+                    httpsTaskList[i] = Task.Run(() => ValidProxyIps(proxyIps, ProxyCheckType.Https));
                 }
                 var httpsTaskResults = Task.WhenAll(httpsTaskList).Result;
                 watch.Stop();
@@ -544,7 +541,7 @@ namespace My.App.Job
             for (int i = 0; i < threadCount; i++)
             {
                 var proxyIps = RawProxyIps.Skip(i * pageCount).Take(pageCount).ToArray();
-                httpTaskList[i] = ValidProxyIps(proxyIps, ProxyCheckType.Http);
+                httpTaskList[i] = Task.Run(() => ValidProxyIps(proxyIps, ProxyCheckType.Http));
             }
             var httpTaskResults = Task.WhenAll(httpTaskList).Result;
             watch.Stop();
@@ -557,7 +554,7 @@ namespace My.App.Job
             for (int i = 0; i < threadCount; i++)
             {
                 var proxyIps = RawProxyIps.Skip(i * pageCount).Take(pageCount).ToArray();
-                httpsTaskList[i] = ValidProxyIps(proxyIps, ProxyCheckType.Https);
+                httpsTaskList[i] = Task.Run(() => ValidProxyIps(proxyIps, ProxyCheckType.Https));
             }
             var httpsTaskResults = Task.WhenAll(httpsTaskList).Result;
             watch.Stop();
@@ -579,70 +576,66 @@ namespace My.App.Job
             }
             string checkTypeName = proxyCheckType.ToString();
             List<string> usefulProxyIps = new List<string>();
-            await Task.Run(() =>
+            Stopwatch stopwatch = new Stopwatch();
+            foreach (var proxyIpEnt in rawProxyIps)
             {
-              System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
-                foreach (var proxyIpEnt in rawProxyIps)
+                try
                 {
-                    try
+                    stopwatch.Restart();
+                    var resultIp = await HttpHelper.GetAsync(checkUrl, null, 5 * 1000, new WebProxy($"http://{proxyIpEnt.IP}:{proxyIpEnt.Port}"));
+                    stopwatch.Stop();
+                    if (resultIp.Contains("origin"))
                     {
-                        stopwatch.Restart();
-                        var resultIp = HttpHelper.Get(checkUrl, null, 5 * 1000, new WebProxy($"http://{proxyIpEnt.IP}:{proxyIpEnt.Port}"));
-                        stopwatch.Stop();
-                        if (resultIp.Contains("origin"))
-                        {
-                            RedisHelper.HashSet(IpProxyCacheKey, $"{proxyIpEnt.IP}:{proxyIpEnt.Port}", "0");
-                            usefulProxyIps.Add( $"{proxyIpEnt.IP}:{proxyIpEnt.Port}");
-                            Console.WriteLine($"代理IP：{proxyIpEnt.IP}:{proxyIpEnt.Port} 通过{checkTypeName}校验");
-                            MongoDBServiceBase.GetList<ProxyIpEnt>(x => x.IP == proxyIpEnt.IP && x.Port == proxyIpEnt.Port)
-                            .ContinueWith(queryResult => {
-                                switch (proxyCheckType)
+                        RedisHelper.HashSet(IpProxyCacheKey, $"{proxyIpEnt.IP}:{proxyIpEnt.Port}", "0");
+                        usefulProxyIps.Add( $"{proxyIpEnt.IP}:{proxyIpEnt.Port}");
+                        Console.WriteLine($"代理IP：{proxyIpEnt.IP}:{proxyIpEnt.Port} 通过{checkTypeName}校验");
+                        await MongoDBServiceBase.GetList<ProxyIpEnt>(x => x.IP == proxyIpEnt.IP && x.Port == proxyIpEnt.Port)
+                        .ContinueWith(queryResult => {
+                            switch (proxyCheckType)
+                            {
+                                case ProxyCheckType.Http:
+                                    proxyIpEnt.Speed = stopwatch.Elapsed.TotalMilliseconds;
+                                    break;
+                                case ProxyCheckType.Https:
+                                    proxyIpEnt.HttpsSpeed = stopwatch.Elapsed.TotalMilliseconds;
+                                    proxyIpEnt.IsSupportHttps = true;
+                                    break;
+                            }
+                            proxyIpEnt.Anonymity = resultIp.Contains(CurrentIp) ? "透明":"高匿";
+                            proxyIpEnt.LastValidTime = DateTime.Now;
+                            if (queryResult.Result.Count == 0)
+                            {
+                                proxyIpEnt.Id = Guid.NewGuid();
+                                proxyIpEnt.CreateTime = DateTime.Now;
+                                MongoDBServiceBase.Insert(proxyIpEnt)
+                                .ContinueWith(insertResult => {
+                                    Console.WriteLine($"{proxyIpEnt.IP}:{proxyIpEnt.Port}插入mongodb成功");
+                                });
+                            }
+                            else
+                            {
+                                var oldProxyIpEnt = queryResult.Result.FirstOrDefault();
+                                if (proxyCheckType == ProxyCheckType.Https)
                                 {
-                                   case ProxyCheckType.Http:
-                                        proxyIpEnt.Speed = stopwatch.Elapsed.TotalMilliseconds;
-                                        break;
-                                   case ProxyCheckType.Https:
-                                        proxyIpEnt.HttpsSpeed = stopwatch.Elapsed.TotalMilliseconds;
-                                        proxyIpEnt.IsSupportHttps = true;
-                                        break;
+                                    proxyIpEnt.Speed = oldProxyIpEnt.Speed;
                                 }
-                                proxyIpEnt.Anonymity = resultIp.Contains(CurrentIp) ? "透明":"高匿";
-                                proxyIpEnt.LastValidTime = DateTime.Now;
-                                if (queryResult.Result.Count == 0)
-                                {
-                                    proxyIpEnt.Id = Guid.NewGuid();
-                                    proxyIpEnt.CreateTime = DateTime.Now;
-                                    MongoDBServiceBase.Insert(proxyIpEnt)
-                                    .ContinueWith(insertResult => {
-                                        Console.WriteLine($"{proxyIpEnt.IP}:{proxyIpEnt.Port}插入mongodb成功");
-                                    });
-                                }
-                                else
-                                {
-                                    var oldProxyIpEnt = queryResult.Result.FirstOrDefault();
-                                    if (proxyCheckType == ProxyCheckType.Https)
-                                    {
-                                        proxyIpEnt.Speed = oldProxyIpEnt.Speed;
-                                    }
-                                    proxyIpEnt.Id = oldProxyIpEnt.Id;
-                                    proxyIpEnt.CreateTime = oldProxyIpEnt.CreateTime;
-                                    MongoDBServiceBase.Replace(proxyIpEnt)
-                                    .ContinueWith(replaceResult => {
-                                        Console.WriteLine($"{proxyIpEnt.IP}:{proxyIpEnt.Port}更新mongodb成功");
-                                    });
-                                }
-                            });
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        // Console.WriteLine(ex.Message);
-                        // Console.WriteLine(ex.ToString());
-                        Console.WriteLine($"代理IP：{proxyIpEnt.IP}:{proxyIpEnt.Port} 未通过{checkTypeName}校验：{ex.Message}");
+                                proxyIpEnt.Id = oldProxyIpEnt.Id;
+                                proxyIpEnt.CreateTime = oldProxyIpEnt.CreateTime;
+                                MongoDBServiceBase.Replace(proxyIpEnt)
+                                .ContinueWith(replaceResult => {
+                                    Console.WriteLine($"{proxyIpEnt.IP}:{proxyIpEnt.Port}更新mongodb成功");
+                                });
+                            }
+                        });
                     }
                 }
-                return Task.CompletedTask;
-            });
+                catch (Exception ex)
+                {
+                    // Console.WriteLine(ex.Message);
+                    // Console.WriteLine(ex.ToString());
+                    Console.WriteLine($"代理IP：{proxyIpEnt.IP}:{proxyIpEnt.Port} 未通过{checkTypeName}校验：{ex.Message}");
+                }
+            }
             return usefulProxyIps;
         }
 

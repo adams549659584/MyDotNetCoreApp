@@ -5,6 +5,7 @@ using System.Text;
 using System.Linq;
 using System.Net;
 using RestSharp;
+using System.Threading.Tasks;
 
 namespace My.App.Core
 {
@@ -68,6 +69,29 @@ namespace My.App.Core
         {
             (var restClient, var restRequest) = InitRestClient(url, dictHeaders, timeout, proxy, Method.POST);
             return restClient.Execute<T>(restRequest).Data;
+        }
+
+
+
+        private static async Task<IRestResponse> GetExecuteAsyncRes(string url, Dictionary<string, string> dictHeaders = null, int timeout = 0, IWebProxy proxy = null)
+        {
+            (var restClient, var restRequest) = InitRestClient(url, dictHeaders, timeout, proxy, Method.GET);
+            var response = await restClient.ExecuteGetTaskAsync(restRequest);
+            if (response.ErrorException != null)
+            {
+                throw response.ErrorException;
+            }
+            if (response.StatusCode != HttpStatusCode.OK)
+            {
+                throw new Exception($"{(int)response.StatusCode}:{response.StatusDescription}");
+            }
+            return response;
+        }
+
+        public static async Task<string> GetAsync(string url, Dictionary<string, string> dictHeaders = null, int timeout = 0, IWebProxy proxy = null)
+        {
+            var res = await GetExecuteAsyncRes(url, dictHeaders, timeout, proxy);
+            return res.Content;
         }
     }
 }
