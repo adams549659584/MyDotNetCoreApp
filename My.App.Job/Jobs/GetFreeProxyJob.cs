@@ -62,11 +62,15 @@ namespace My.App.Job
             //LogHelper.Log("抓取免费IP代理作业执行：");
             var dictProxyIps = RedisHelper.HashGetAll(IpProxyCacheKey);
             var usefulProxyIps = dictProxyIps.Keys.ToList();
-            Task.WaitAll(
-                Task.Run(() => FreeProxyIHuan("", 1, usefulProxyIps.Clone())),
-                Task.Run(() => FreeProxy89Ip(1, usefulProxyIps.Clone())),
-                Task.Run(() => FreeProxyXiLa(1, usefulProxyIps.Clone()))
-                );
+            var proxyConfigFullPath = PathHelper.MapFile("Config", "proxyConfig.json");
+            var proxyConfigJson = File.ReadAllText(proxyConfigFullPath);
+            var proxyConfigs = string.IsNullOrWhiteSpace(proxyConfigJson) ? new List<ProxyConfigEnt>() : JsonHelper.Deserialize<List<ProxyConfigEnt>>(proxyConfigJson);
+            var freeProxyTasks = proxyConfigs.Select(proxy =>
+            {
+                return FreeProxyCommon(proxy, 1, usefulProxyIps.Clone());
+            }).ToList();
+            freeProxyTasks.Add(FreeProxyIHuan("", 1, usefulProxyIps.Clone()));
+            Task.WaitAll(freeProxyTasks.ToArray());
             ValidProxyIps();
             RawProxyIps.Clear();
 
@@ -80,7 +84,7 @@ namespace My.App.Job
         {
             try
             {
-                var proxyIpMaxPage = DictHelper.GetValue("My.App.Job.GetFreeProxyJob.ProxyIpMaxPage.IHuan").ToInt(5);
+                var proxyIpMaxPage = DictHelper.GetValue("My.App.Job.GetFreeProxyJob.ProxyIpMaxPage.ihuan").ToInt(5);
                 if (page <= proxyIpMaxPage)
                 {
                     Console.WriteLine($"抓取免费IP代理作业开始抓取ihuan第{page}页:");
@@ -212,7 +216,7 @@ namespace My.App.Job
         {
             try
             {
-                var proxyIpMaxPage = DictHelper.GetValue("My.App.Job.GetFreeProxyJob.ProxyIpMaxPage.89Ip").ToInt(5);
+                var proxyIpMaxPage = DictHelper.GetValue("My.App.Job.GetFreeProxyJob.ProxyIpMaxPage.89ip").ToInt(5);
                 if (page <= proxyIpMaxPage)
                 {
                     Console.WriteLine($"抓取免费IP代理作业开始抓取89ip第{page}页:");
@@ -341,7 +345,7 @@ namespace My.App.Job
         {
             try
             {
-                var proxyIpMaxPage = DictHelper.GetValue("My.App.Job.GetFreeProxyJob.ProxyIpMaxPage.XiLa").ToInt(5);
+                var proxyIpMaxPage = DictHelper.GetValue("My.App.Job.GetFreeProxyJob.ProxyIpMaxPage.xila").ToInt(5);
                 if (page <= proxyIpMaxPage)
                 {
                     Console.WriteLine($"抓取免费IP代理作业开始抓取XiLa第{page}页:");
@@ -457,6 +461,147 @@ namespace My.App.Job
                     }
                 }
                 Console.WriteLine($"抓取免费IP代理作业抓取XiLa结束");
+            }
+            catch (Exception ex)
+            {
+                LogHelper.Log(ex);
+            }
+        }
+
+        /// <summary>
+        /// 通用获取代理
+        /// </summary>
+        /// <returns></returns>
+        async Task FreeProxyCommon(ProxyConfigEnt proxyConfig, int page = 1, List<string> usefulProxyIps = null)
+        {
+            try
+            {
+                string proxyConfigCode = proxyConfig.Code;
+                if (page <= proxyConfig.MaxPage)
+                {
+                    Console.WriteLine($"抓取免费IP代理作业开始抓取{proxyConfigCode}第{page}页:");
+                    string getIpUrl = string.Format(proxyConfig.FormatUrl, page);
+                    string headerFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config", $"{proxyConfigCode}_header.txt");
+                    var fileLastWriteTime = File.GetLastWriteTime(headerFilePath);
+                    bool HeaderFileIsExpried = false;
+                    DateTime HeaderFileLastWriteTime = DateTime.MinValue;
+                    if (!HeaderFilesIsExpried.ContainsKey(headerFilePath))
+                    {
+                        lock (HeaderFilesIsExpried)
+                        {
+                            HeaderFilesIsExpried[headerFilePath] = HeaderFileIsExpried;
+                        }
+                    }
+                    if (!HeaderFilesLastWriteTime.ContainsKey(headerFilePath))
+                    {
+                        lock (HeaderFilesLastWriteTime)
+                        {
+                            HeaderFilesLastWriteTime[headerFilePath] = HeaderFileLastWriteTime;
+                        }
+                    }
+                    if (HeaderFileIsExpried && fileLastWriteTime <= HeaderFileLastWriteTime)
+                    {
+                        Console.WriteLine($"抓取免费IP代理作业异常：{proxyConfigCode} cookie 文件头未更新最新，暂不执行作业！");
+                        return;
+                    }
+                    var headerStrs = ReadAllLines(headerFilePath);
+                    var dictHeaders = headerStrs.Select(h => h.Split(new string[] { ": " }, StringSplitOptions.RemoveEmptyEntries)).ToDictionary(x => x[0], x => x[1]);
+                    string ipHtml = string.Empty;
+                    var tempProxyIps = new string[usefulProxyIps.Count];
+                    usefulProxyIps.CopyTo(tempProxyIps);
+                    foreach (var currProxyIp in tempProxyIps)
+                    {
+                        try
+                        {
+                            Console.WriteLine($"抓取免费IP代理作业 {proxyConfigCode} 当前使用代理Ip：{currProxyIp}");
+                            ipHtml = await HttpHelper.GetAsync(getIpUrl, dictHeaders, 10 * 1000, new WebProxy($"http://{currProxyIp}"));
+                            usefulProxyIps.RemoveAll(x => x == currProxyIp);
+                            usefulProxyIps.Insert(0, currProxyIp);
+                            break;
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"{proxyConfigCode} 使用代理Ip {currProxyIp} 异常： {ex.Message}");
+                            // Console.WriteLine(ex.ToString());
+                            // LogHelper.Log(ex);
+                        }
+                    }
+                    var htmlDoc = new HtmlDocument();
+                    htmlDoc.LoadHtml(ipHtml);
+                    var ipTrs = htmlDoc.DocumentNode.SelectNodes(proxyConfig.RowXPath);
+                    if (ipTrs == null)
+                    {
+                        if (ipHtml.Contains("高匿ip非国外免费代理服务器"))
+                        {
+                            Console.WriteLine($"抓取免费IP代理作业抓取{proxyConfigCode}结束");
+                        }
+                        else
+                        {
+                            // HeaderFilesIsExpried[headerFilePath] = true;
+                            // HeaderFilesLastWriteTime[headerFilePath] = fileLastWriteTime;
+                            Console.WriteLine($"抓取免费IP代理作业 {proxyConfigCode} 异常：");
+                            Console.WriteLine(ipHtml);
+                            NotifyHelper.Weixin($"抓取免费IP代理作业 {proxyConfigCode} 异常", new MarkdownBuilder().AppendHtml(ipHtml));
+                        }
+                        return;
+                    }
+                    foreach (var item in ipTrs)
+                    {
+                        try
+                        {
+                            string ip = string.Empty;
+                            string port = string.Empty;
+                            if (proxyConfig.IsUnionIpAndPort)
+                            {
+                                var ipAndPort = item.SelectSingleNode($"{item.XPath}{proxyConfig.IpXPath}").InnerText.Trim();
+                                var ipAndPortArr = ipAndPort.Split(new char[] { ':' }, StringSplitOptions.RemoveEmptyEntries);
+                                ip = ipAndPortArr[0];
+                                port = ipAndPortArr[1];
+                            }
+                            else
+                            {
+                                ip = item.SelectSingleNode($"{item.XPath}{proxyConfig.IpXPath}").InnerText.Trim();
+                                port = item.SelectSingleNode($"{item.XPath}{proxyConfig.PortXPath}").InnerText.Trim();
+                            }
+                            var location = item.SelectSingleNode($"{item.XPath}{proxyConfig.LocationXPath}").InnerText.Trim();
+                            var proxyIpEnt = new ProxyIpEnt()
+                            {
+                                Id = Guid.NewGuid(),
+                                IP = ip,
+                                Port = port.ToInt(),
+                                Location = HttpUtility.HtmlDecode(location)
+                            };
+                            RawProxyIpList.Add(proxyIpEnt);
+                            Console.WriteLine($"抓取免费IP代理作业 {proxyConfigCode} 抓取到IP:{ip}:{port}");
+                            // RedisHelper.Set(IpProxyCacheKey, $"{ipAndPort}", "1");
+                            RawProxyIps[$"{ip}:{port}"] = false;
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine(ex.ToString());
+                            // LogHelper.Log(ex);
+                        }
+                    }
+                    var pageEles = htmlDoc.DocumentNode.SelectNodes(proxyConfig.NextPageXPath);
+                    if (pageEles.Count > 2)
+                    {
+                        int nextPage = 0;
+                        for (int i = 1; i < (pageEles.Count - 1); i++)
+                        {
+                            nextPage = pageEles[i].InnerText.ToInt(nextPage);
+                            if (nextPage > page)
+                            {
+                                break;
+                            }
+                        }
+                        if (nextPage > 0)
+                        {
+                            await FreeProxyCommon(proxyConfig, nextPage, usefulProxyIps);
+                            return;
+                        }
+                    }
+                }
+                Console.WriteLine($"抓取免费IP代理作业抓取{proxyConfigCode}结束");
             }
             catch (Exception ex)
             {

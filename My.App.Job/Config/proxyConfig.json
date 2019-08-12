@@ -1,0 +1,26 @@
+﻿[
+  {
+    "Code": "89ip",
+    "Desc": "89ip代理",
+    "FormatUrl": "http://www.89ip.cn/index_{0}.html",
+    "MaxPage": 30,
+    "RowXPath": "//div[3]//div[1]//div//div[1]//table//tbody//tr",
+    "IpXPath": "//td[1]",
+    "PortXPath": "//td[2]",
+    "LocationXPath": "//td[3]",
+    "IsUnionIpAndPort": false,
+    "NextPageXPath": "//div[@id='layui-laypage-1']//a"
+  },
+  {
+    "Code": "xila",
+    "Desc": "XiLa代理",
+    "FormatUrl": "http://www.xiladaili.com/gaoni/{0}/",
+    "MaxPage": 100,
+    "RowXPath": "//html//body//div//div[3]//div[2]//table//tbody//tr",
+    "IpXPath": "//td[1]",
+    "PortXPath": null,
+    "LocationXPath": "//td[4]",
+    "IsUnionIpAndPort": true,
+    "NextPageXPath": "//html//body//div//div[3]//nav//ul//li//a"
+  }
+]

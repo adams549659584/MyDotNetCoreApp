@@ -7,6 +7,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\My.App.Core\My.App.Core.csproj" />
+    <ProjectReference Include="..\My.App.Job\My.App.Job.csproj" />
   </ItemGroup>
 
   <ItemGroup>

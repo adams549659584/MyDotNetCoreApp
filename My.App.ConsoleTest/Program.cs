@@ -128,7 +128,7 @@ namespace My.App.ConsoleTest
             DictHelper.Update(new DictEnt()
             {
                 Key = dictKeyXiLa,
-                Value = "660",
+                Value = "100",
                 Desc = "西拉免费代理IP最大抓取页数"
             });
         }
