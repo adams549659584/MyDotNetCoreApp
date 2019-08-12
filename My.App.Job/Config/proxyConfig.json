@@ -22,5 +22,17 @@
     "LocationXPath": "//td[4]",
     "IsUnionIpAndPort": true,
     "NextPageXPath": "//html//body//div//div[3]//nav//ul//li//a"
+  },
+  {
+    "Code": "qy",
+    "Desc": "齐云代理",
+    "FormatUrl": "http://www.qydaili.com/free/?action=china&page={0}",
+    "MaxPage": 5,
+    "RowXPath": "//section[@id='content']//div[2]//table//tbody//tr",
+    "IpXPath": "//td[1]",
+    "PortXPath": "//td[2]",
+    "LocationXPath": "//td[5]",
+    "IsUnionIpAndPort": false,
+    "NextPageXPath": "//section[@id='content']//div[2]//nav//ul//li//a"
   }
 ]

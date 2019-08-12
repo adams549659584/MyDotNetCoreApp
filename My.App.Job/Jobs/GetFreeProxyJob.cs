@@ -687,7 +687,7 @@ namespace My.App.Job
             for (int i = 0; i < threadCount; i++)
             {
                 var proxyIps = RawProxyIps.Skip(i * pageCount).Take(pageCount).ToArray();
-                httpTaskList[i] = Task.Run(() => ValidProxyIps(proxyIps, ProxyCheckType.Http));
+                httpTaskList[i] = ValidProxyIps(proxyIps, ProxyCheckType.Http);
             }
             var httpTaskResults = Task.WhenAll(httpTaskList).Result;
             watch.Stop();
@@ -700,7 +700,7 @@ namespace My.App.Job
             for (int i = 0; i < threadCount; i++)
             {
                 var proxyIps = RawProxyIps.Skip(i * pageCount).Take(pageCount).ToArray();
-                httpsTaskList[i] = Task.Run(() => ValidProxyIps(proxyIps, ProxyCheckType.Https));
+                httpsTaskList[i] = ValidProxyIps(proxyIps, ProxyCheckType.Https);
             }
             var httpsTaskResults = Task.WhenAll(httpsTaskList).Result;
             watch.Stop();
