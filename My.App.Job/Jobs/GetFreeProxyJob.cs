@@ -56,7 +56,7 @@ namespace My.App.Job
             // LogHelper.Log("抓取免费IP代理作业启动");
         }
 
-        protected override void DoWork(object state)
+        protected override async Task DoWork(object state)
         {
             //base.Logger.Log(LogLevel.Debug, "测试作业执行：");
             //LogHelper.Log("抓取免费IP代理作业执行：");
@@ -71,7 +71,7 @@ namespace My.App.Job
             }).ToList();
             // freeProxyTasks.Add(FreeProxyIHuan("", 1, usefulProxyIps.Clone()));
             Task.WaitAll(freeProxyTasks.ToArray());
-            ValidProxyIps();
+            await ValidProxyIps();
             RawProxyIps.Clear();
 
             //TestValidProxyIps();
@@ -630,7 +630,7 @@ namespace My.App.Job
         /// <summary>
         /// 校验代理ip是否可用，可用的放进ip池
         /// </summary>
-        void ValidProxyIps()
+        async Task ValidProxyIps()
         {
             Console.WriteLine($"开始校验代理ip是否可用，当前需校验ip数量为{RawProxyIpList.Count}");
             if (RawProxyIpList.Count > 0)
@@ -646,7 +646,7 @@ namespace My.App.Job
                     var proxyIps = RawProxyIpList.Skip(i * pageCount).Take(pageCount).ToArray();
                     httpTaskList[i] = Task.Run(() => ValidProxyIps(proxyIps, ProxyCheckType.Http));
                 }
-                var httpTaskResults = Task.WhenAll(httpTaskList).Result;
+                var httpTaskResults = await Task.WhenAll(httpTaskList);
                 watch.Stop();
                 var httpUsefulProxyIps = httpTaskResults.SelectMany(x => x).ToList();
                 Console.WriteLine($"全部代理IP({RawProxyIpList.Count})HTTP检查完毕，有效IP({httpUsefulProxyIps.Count})，耗时：{watch.Elapsed.TotalSeconds} 秒");
@@ -659,7 +659,7 @@ namespace My.App.Job
                     var proxyIps = RawProxyIpList.Skip(i * pageCount).Take(pageCount).ToArray();
                     httpsTaskList[i] = Task.Run(() => ValidProxyIps(proxyIps, ProxyCheckType.Https));
                 }
-                var httpsTaskResults = Task.WhenAll(httpsTaskList).Result;
+                var httpsTaskResults = await Task.WhenAll(httpsTaskList);
                 watch.Stop();
                 var httpsUsefulProxyIps = httpsTaskResults.SelectMany(x => x).ToList();
                 Console.WriteLine($"全部代理IP({RawProxyIpList.Count})HTTPS检查完毕，有效IP({httpsUsefulProxyIps.Count})，耗时：{watch.Elapsed.TotalSeconds} 秒");
@@ -670,7 +670,7 @@ namespace My.App.Job
             }
         }
 
-        void TestValidProxyIps()
+        async void TestValidProxyIps()
         {
             Stopwatch watch = new Stopwatch();
             watch.Start();
@@ -694,7 +694,7 @@ namespace My.App.Job
                 var proxyIps = RawProxyIps.Skip(i * pageCount).Take(pageCount).ToArray();
                 httpTaskList[i] = ValidProxyIps(proxyIps, ProxyCheckType.Http);
             }
-            var httpTaskResults = Task.WhenAll(httpTaskList).Result;
+            var httpTaskResults = await Task.WhenAll(httpTaskList);
             watch.Stop();
             var httpUsefulProxyIps = httpTaskResults.SelectMany(x => x).ToList();
             Console.WriteLine($"全部代理IP({checkProxyIpCount})HTTP检查完毕，有效IP({httpUsefulProxyIps.Count})，耗时：{watch.Elapsed.TotalSeconds} 秒");
@@ -707,7 +707,7 @@ namespace My.App.Job
                 var proxyIps = RawProxyIps.Skip(i * pageCount).Take(pageCount).ToArray();
                 httpsTaskList[i] = ValidProxyIps(proxyIps, ProxyCheckType.Https);
             }
-            var httpsTaskResults = Task.WhenAll(httpsTaskList).Result;
+            var httpsTaskResults = await Task.WhenAll(httpsTaskList);
             watch.Stop();
             var httpsUsefulProxyIps = httpsTaskResults.SelectMany(x => x).ToList();
             Console.WriteLine($"全部代理IP({checkProxyIpCount})HTTPS检查完毕，有效IP({httpsUsefulProxyIps.Count})，耗时：{watch.Elapsed.TotalSeconds} 秒");

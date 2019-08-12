@@ -17,9 +17,10 @@ namespace My.App.Job
         {
         }
 
-        protected override void DoWork(object state)
+        protected override Task DoWork(object state)
         {
             Preheat();
+            return Task.CompletedTask;
         }
 
         void Preheat()

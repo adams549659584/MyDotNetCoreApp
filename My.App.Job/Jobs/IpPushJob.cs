@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using My.App.Core;
@@ -17,11 +18,12 @@ namespace My.App.Job
             // LogHelper.Log("IP推送作业启动");
         }
 
-        protected override void DoWork(object state)
+        protected override Task DoWork(object state)
         {
             //base.Logger.Log(LogLevel.Debug, "测试作业执行：");
             //LogHelper.Log("IP推送作业执行：");
             IpPush();
+            return Task.CompletedTask;
         }
 
         void IpPush()

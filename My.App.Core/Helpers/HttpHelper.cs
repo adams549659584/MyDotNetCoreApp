@@ -87,8 +87,7 @@ namespace My.App.Core
 
             await MongoDBServiceBase.Insert<HttpLogEnt>(log);
             (var restClient, var restRequest) = InitRestClient(url, dictHeaders, timeout, proxy, Method.GET);
-            //ConfigureAwait(false)解决死锁?
-            var response = await restClient.ExecuteGetTaskAsync(restRequest).ConfigureAwait(false);
+            var response = await restClient.ExecuteGetTaskAsync(restRequest);
             response.SetResponseEncoding();
             log.ResStatusCode = (int)response.StatusCode;
             log.FinishedTime = DateTime.Now;

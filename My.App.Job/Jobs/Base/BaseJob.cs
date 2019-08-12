@@ -63,7 +63,7 @@ namespace My.App.Job
             return Task.CompletedTask;
         }
 
-        void TimerCallback(object state)
+        async void TimerCallback(object state)
         {
             var jobName = this.GetType().Name;
             lock (JobRunningStatus)
@@ -78,7 +78,7 @@ namespace My.App.Job
             Console.WriteLine($"作业{jobName}执行开始");
             try
             {
-                DoWork(state);
+               await DoWork(state);
             }
             catch (Exception ex)
             {
@@ -95,6 +95,6 @@ namespace My.App.Job
         /// 执行任务
         /// </summary>
         /// <param name="state"></param>
-        protected abstract void DoWork(object state);
+        protected abstract Task DoWork(object state);
     }
 }
