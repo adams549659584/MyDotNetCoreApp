@@ -34,5 +34,17 @@
     "LocationXPath": "//td[5]",
     "IsUnionIpAndPort": false,
     "NextPageXPath": "//section[@id='content']//div[2]//nav//ul//li//a"
+  },
+  {
+    "Code": "ip3366",
+    "Desc": "ip3366云代理",
+    "FormatUrl": "http://www.ip3366.net/?stype=1&page={0}",
+    "MaxPage": 5,
+    "RowXPath": "//div[@id='list']//table//tbody//tr",
+    "IpXPath": "//td[1]",
+    "PortXPath": "//td[2]",
+    "LocationXPath": "//td[6]",
+    "IsUnionIpAndPort": false,
+    "NextPageXPath": "//div[@id='listnav']//ul//a"
   }
 ]
