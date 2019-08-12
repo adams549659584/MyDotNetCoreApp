@@ -62,7 +62,7 @@ namespace My.App.Job
             //LogHelper.Log("抓取免费IP代理作业执行：");
             var dictProxyIps = RedisHelper.HashGetAll(IpProxyCacheKey);
             var usefulProxyIps = dictProxyIps.Keys.ToList();
-            var proxyConfigFullPath = PathHelper.MapFile("Config", "proxyConfig.json");
+            var proxyConfigFullPath = PathHelper.MapFile("Config", "proxyConfig.jsonc");
             var proxyConfigJson = File.ReadAllText(proxyConfigFullPath);
             var proxyConfigs = string.IsNullOrWhiteSpace(proxyConfigJson) ? new List<ProxyConfigEnt>() : JsonHelper.Deserialize<List<ProxyConfigEnt>>(proxyConfigJson);
             var freeProxyTasks = proxyConfigs.Select(proxy =>
