@@ -69,7 +69,7 @@ namespace My.App.Job
             {
                 return FreeProxyCommon(proxy, 1, usefulProxyIps.Clone());
             }).ToList();
-            // freeProxyTasks.Add(FreeProxyIHuan("", 1, usefulProxyIps.Clone()));
+            freeProxyTasks.Add(FreeProxyIHuan("", 1, usefulProxyIps.Clone()));
             Task.WaitAll(freeProxyTasks.ToArray());
             await ValidProxyIps();
             RawProxyIps.Clear();
