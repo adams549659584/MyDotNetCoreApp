@@ -16,6 +16,7 @@ namespace My.App.Core
             var restClient = new RestClient();
             if (timeout > 0)
             {
+                restClient.ReadWriteTimeout = timeout;
                 restClient.Timeout = timeout;
             }
             if (proxy != null)
