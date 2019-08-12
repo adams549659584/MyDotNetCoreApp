@@ -632,7 +632,7 @@ namespace My.App.Job
             {
                 Stopwatch watch = new Stopwatch();
                 watch.Start();
-                int threadCount = 50;
+                int threadCount = DictHelper.GetValue("My.App.Job.GetFreeProxyJob.ValidProxyIp.ThreadCount").ToInt(50);
                 int pageCount = (int)Math.Ceiling(RawProxyIpList.Count / (decimal)threadCount);
                 // http
                 var httpTaskList = new Task<List<string>>[threadCount];
