@@ -42,13 +42,13 @@ namespace My.App.Job
 
         private static List<ProxyIpEnt> RawProxyIpList = new List<ProxyIpEnt>();
 
-        private static string CurrentIp 
+        private static string CurrentIp
         {
             get
             {
                 return RedisHelper.Get<string>("My.App.Job.IpPush.LastIp");
             }
-        } 
+        }
 
         public GetFreeProxyJob(ILogger<BaseJob> logger, IHostApplicationLifetime appLifetime) : base(JobTimerInterval, logger, appLifetime)
         {
@@ -63,9 +63,9 @@ namespace My.App.Job
             var dictProxyIps = RedisHelper.HashGetAll(IpProxyCacheKey);
             var usefulProxyIps = dictProxyIps.Keys.ToList();
             Task.WaitAll(
-                Task.Run(()=> FreeProxyIHuan("", 1, usefulProxyIps.Clone())),
-                Task.Run(()=> FreeProxy89Ip(1, usefulProxyIps.Clone())),
-                Task.Run(()=> FreeProxyXiLa(1, usefulProxyIps.Clone()))
+                Task.Run(() => FreeProxyIHuan("", 1, usefulProxyIps.Clone())),
+                Task.Run(() => FreeProxy89Ip(1, usefulProxyIps.Clone())),
+                Task.Run(() => FreeProxyXiLa(1, usefulProxyIps.Clone()))
                 );
             ValidProxyIps();
             RawProxyIps.Clear();
@@ -193,7 +193,7 @@ namespace My.App.Job
                         if (nextPage > 0)
                         {
                             await FreeProxyIHuan(href, nextPage, usefulProxyIps);
-                            return ;
+                            return;
                         }
                     }
                 }
@@ -415,7 +415,7 @@ namespace My.App.Job
                         try
                         {
                             var ipAndPort = item.SelectSingleNode($"{item.XPath}//td[1]").InnerText.Trim();
-                            var ipAndPortArr = ipAndPort.Split(new char[] {':'},StringSplitOptions.RemoveEmptyEntries);
+                            var ipAndPortArr = ipAndPort.Split(new char[] { ':' }, StringSplitOptions.RemoveEmptyEntries);
                             var ip = ipAndPortArr[0];
                             var port = ipAndPortArr[1];
                             var location = item.SelectSingleNode($"{item.XPath}//td[4]").InnerText.Trim();
@@ -525,7 +525,8 @@ namespace My.App.Job
             Stopwatch watch = new Stopwatch();
             watch.Start();
             int checkProxyIpCount = 12;
-            var RawProxyIps = RedisHelper.HashGetAll(IpProxyCacheKey).Keys.Take(checkProxyIpCount).Select(x => {
+            var RawProxyIps = RedisHelper.HashGetAll(IpProxyCacheKey).Keys.Take(checkProxyIpCount).Select(x =>
+            {
                 var ips = x.Split(":");
                 var ent = new ProxyIpEnt()
                 {
@@ -547,7 +548,7 @@ namespace My.App.Job
             watch.Stop();
             var httpUsefulProxyIps = httpTaskResults.SelectMany(x => x).ToList();
             Console.WriteLine($"全部代理IP({checkProxyIpCount})HTTP检查完毕，有效IP({httpUsefulProxyIps.Count})，耗时：{watch.Elapsed.TotalSeconds} 秒");
-            
+
             // https
             watch.Restart();
             var httpsTaskList = new Task<List<string>>[threadCount];
@@ -587,10 +588,11 @@ namespace My.App.Job
                     if (resultIp.Contains("origin"))
                     {
                         RedisHelper.HashSet(IpProxyCacheKey, $"{proxyIpEnt.IP}:{proxyIpEnt.Port}", "0");
-                        usefulProxyIps.Add( $"{proxyIpEnt.IP}:{proxyIpEnt.Port}");
+                        usefulProxyIps.Add($"{proxyIpEnt.IP}:{proxyIpEnt.Port}");
                         Console.WriteLine($"代理IP：{proxyIpEnt.IP}:{proxyIpEnt.Port} 通过{checkTypeName}校验");
                         await MongoDBServiceBase.GetList<ProxyIpEnt>(x => x.IP == proxyIpEnt.IP && x.Port == proxyIpEnt.Port)
-                        .ContinueWith(queryResult => {
+                        .ContinueWith(queryResult =>
+                        {
                             switch (proxyCheckType)
                             {
                                 case ProxyCheckType.Http:
@@ -601,14 +603,15 @@ namespace My.App.Job
                                     proxyIpEnt.IsSupportHttps = true;
                                     break;
                             }
-                            proxyIpEnt.Anonymity = resultIp.Contains(CurrentIp) ? "透明":"高匿";
+                            proxyIpEnt.Anonymity = resultIp.Contains(CurrentIp) ? "透明" : "高匿";
                             proxyIpEnt.LastValidTime = DateTime.Now;
                             if (queryResult.Result.Count == 0)
                             {
                                 proxyIpEnt.Id = Guid.NewGuid();
                                 proxyIpEnt.CreateTime = DateTime.Now;
                                 MongoDBServiceBase.Insert(proxyIpEnt)
-                                .ContinueWith(insertResult => {
+                                .ContinueWith(insertResult =>
+                                {
                                     Console.WriteLine($"{proxyIpEnt.IP}:{proxyIpEnt.Port}插入mongodb成功");
                                 });
                             }
@@ -622,7 +625,8 @@ namespace My.App.Job
                                 proxyIpEnt.Id = oldProxyIpEnt.Id;
                                 proxyIpEnt.CreateTime = oldProxyIpEnt.CreateTime;
                                 MongoDBServiceBase.Replace(proxyIpEnt)
-                                .ContinueWith(replaceResult => {
+                                .ContinueWith(replaceResult =>
+                                {
                                     Console.WriteLine($"{proxyIpEnt.IP}:{proxyIpEnt.Port}更新mongodb成功");
                                 });
                             }

@@ -54,7 +54,7 @@ namespace My.App.Core
         {
             return GetExecuteRes(url, dictHeaders, timeout, proxy).Content;
         }
-        public static T Get<T>(string url, Dictionary<string, string> dictHeaders = null, int timeout = 0, IWebProxy proxy = null)  where T : new()
+        public static T Get<T>(string url, Dictionary<string, string> dictHeaders = null, int timeout = 0, IWebProxy proxy = null) where T : new()
         {
             (var restClient, var restRequest) = InitRestClient(url, dictHeaders, timeout, proxy, Method.GET);
             return restClient.Execute<T>(restRequest).Data;
@@ -65,7 +65,7 @@ namespace My.App.Core
             (var restClient, var restRequest) = InitRestClient(url, dictHeaders, timeout, proxy, Method.POST);
             return restClient.Execute(restRequest).Content;
         }
-        public static T Post<T>(string url, Dictionary<string, string> dictHeaders = null, int timeout = 0, IWebProxy proxy = null)  where T : new()
+        public static T Post<T>(string url, Dictionary<string, string> dictHeaders = null, int timeout = 0, IWebProxy proxy = null) where T : new()
         {
             (var restClient, var restRequest) = InitRestClient(url, dictHeaders, timeout, proxy, Method.POST);
             return restClient.Execute<T>(restRequest).Data;
@@ -88,10 +88,37 @@ namespace My.App.Core
             return response;
         }
 
+        private static MongoDBServiceBase MongoDBServiceBase = new MongoDBServiceBase("MyJob");
         public static async Task<string> GetAsync(string url, Dictionary<string, string> dictHeaders = null, int timeout = 0, IWebProxy proxy = null)
         {
+            var log = new HttpLogEnt()
+            {
+                Id = Guid.NewGuid(),
+                Url = url,
+                ProxyIp = ((WebProxy)proxy).Address.ToString(),
+                StartTime = DateTime.Now
+            };
+            await MongoDBServiceBase.Insert<HttpLogEnt>(log);
             var res = await GetExecuteAsyncRes(url, dictHeaders, timeout, proxy);
+            log.FinishedTime = DateTime.Now;
+            log.IsFinished = true;
+            MongoDBServiceBase.Replace<HttpLogEnt>(log);
             return res.Content;
         }
+    }
+
+    public class HttpLogEnt : IMongoEnt
+    {
+        public Guid Id { get; set; }
+
+        public string Url { get; set; }
+
+        public string ProxyIp { get; set; }
+
+        public DateTime StartTime { get; set; }
+
+        public bool IsFinished { get; set; }
+
+        public DateTime FinishedTime { get; set; }
     }
 }
