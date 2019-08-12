@@ -75,8 +75,23 @@ namespace My.App.Core
 
         private static async Task<IRestResponse> GetExecuteAsyncRes(string url, Dictionary<string, string> dictHeaders = null, int timeout = 0, IWebProxy proxy = null)
         {
+            var log = new HttpLogEnt()
+            {
+                Id = Guid.NewGuid(),
+                Url = url,
+                ProxyIp = ((WebProxy)proxy).Address.ToString(),
+                StartTime = DateTime.Now
+            };
+
+            await MongoDBServiceBase.Insert<HttpLogEnt>(log);
             (var restClient, var restRequest) = InitRestClient(url, dictHeaders, timeout, proxy, Method.GET);
             var response = await restClient.ExecuteGetTaskAsync(restRequest);
+
+            log.ResStatusCode = (int)response.StatusCode;
+            log.FinishedTime = DateTime.Now;
+            log.IsFinished = true;
+            MongoDBServiceBase.Replace<HttpLogEnt>(log);
+
             if (response.ErrorException != null)
             {
                 throw response.ErrorException;
@@ -91,18 +106,7 @@ namespace My.App.Core
         private static MongoDBServiceBase MongoDBServiceBase = new MongoDBServiceBase("MyJob");
         public static async Task<string> GetAsync(string url, Dictionary<string, string> dictHeaders = null, int timeout = 0, IWebProxy proxy = null)
         {
-            var log = new HttpLogEnt()
-            {
-                Id = Guid.NewGuid(),
-                Url = url,
-                ProxyIp = ((WebProxy)proxy).Address.ToString(),
-                StartTime = DateTime.Now
-            };
-            await MongoDBServiceBase.Insert<HttpLogEnt>(log);
             var res = await GetExecuteAsyncRes(url, dictHeaders, timeout, proxy);
-            log.FinishedTime = DateTime.Now;
-            log.IsFinished = true;
-            MongoDBServiceBase.Replace<HttpLogEnt>(log);
             return res.Content;
         }
     }
@@ -116,6 +120,8 @@ namespace My.App.Core
         public string ProxyIp { get; set; }
 
         public DateTime StartTime { get; set; }
+
+        public int ResStatusCode { get; set; }
 
         public bool IsFinished { get; set; }
 
