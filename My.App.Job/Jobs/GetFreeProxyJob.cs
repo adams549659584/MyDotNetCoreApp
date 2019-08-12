@@ -69,7 +69,7 @@ namespace My.App.Job
             {
                 return FreeProxyCommon(proxy, 1, usefulProxyIps.Clone());
             }).ToList();
-            freeProxyTasks.Add(FreeProxyIHuan("", 1, usefulProxyIps.Clone()));
+            // freeProxyTasks.Add(FreeProxyIHuan("", 1, usefulProxyIps.Clone()));
             Task.WaitAll(freeProxyTasks.ToArray());
             ValidProxyIps();
             RawProxyIps.Clear();
@@ -515,6 +515,11 @@ namespace My.App.Job
                         {
                             Console.WriteLine($"抓取免费IP代理作业 {proxyConfigCode} 当前使用代理Ip：{currProxyIp}");
                             ipHtml = await HttpHelper.GetAsync(getIpUrl, dictHeaders, 10 * 1000, new WebProxy($"http://{currProxyIp}"));
+                            if (!string.IsNullOrEmpty(proxyConfig.FailedKeyWords) && ipHtml.Contains(proxyConfig.FailedKeyWords))
+                            {
+                                Console.WriteLine($"{proxyConfigCode} 使用代理Ip {currProxyIp} 捕获失败关键词：{proxyConfig.FailedKeyWords}，响应内容：{ipHtml}");
+                                continue;
+                            }
                             usefulProxyIps.RemoveAll(x => x == currProxyIp);
                             usefulProxyIps.Insert(0, currProxyIp);
                             break;

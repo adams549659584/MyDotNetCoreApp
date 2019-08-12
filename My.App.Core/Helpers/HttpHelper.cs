@@ -41,6 +41,7 @@ namespace My.App.Core
         {
             (var restClient, var restRequest) = InitRestClient(url, dictHeaders, timeout, proxy, Method.GET);
             var response = restClient.Execute(restRequest);
+            response.SetResponseEncoding();
             if (response.ErrorException != null)
             {
                 throw response.ErrorException;
@@ -88,6 +89,7 @@ namespace My.App.Core
             (var restClient, var restRequest) = InitRestClient(url, dictHeaders, timeout, proxy, Method.GET);
             //ConfigureAwait(false)解决死锁?
             var response = await restClient.ExecuteGetTaskAsync(restRequest).ConfigureAwait(false);
+            response.SetResponseEncoding();
             log.ResStatusCode = (int)response.StatusCode;
             log.FinishedTime = DateTime.Now;
             log.IsFinished = true;

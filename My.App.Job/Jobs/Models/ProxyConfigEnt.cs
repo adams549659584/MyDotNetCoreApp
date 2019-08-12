@@ -20,6 +20,11 @@ namespace My.App.Job
         /// </summary>
         public int MaxPage { get; set; }
 
+        /// <summary>
+        /// 判断抓取失败的关键词,出现此关键词的重新抓取
+        /// </summary>
+        public string FailedKeyWords { get; set; }
+
         public string RowXPath { get; set; }
 
         /// <summary>
