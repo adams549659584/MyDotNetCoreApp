@@ -469,7 +469,7 @@ namespace My.App.Job
         }
 
         /// <summary>
-        /// 通用获取代理
+        /// 通用获取代理 document.evaluate("//div[@id='list']//table//tbody//tr", document, null, XPathResult.ANY_TYPE, null).iterateNext().innerText
         /// </summary>
         /// <returns></returns>
         async Task FreeProxyCommon(ProxyConfigEnt proxyConfig, int page = 1, List<string> usefulProxyIps = null)
