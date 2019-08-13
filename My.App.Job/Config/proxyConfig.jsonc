@@ -73,5 +73,32 @@
     "NextPageXPath": "//div[@id='listnav']//ul//a",
     "IsPageWithHref": false,
     "CurrentHref": ""
+  },
+  {
+    "Code": "kuai",
+    "Desc": "快代理",
+    "FormatUrl": "https://www.kuaidaili.com/free/inha/{0}/",
+    "FailedKeyWords": "",
+    "MaxPage": 2,
+    "RowXPath": "//div[@id='list']//table//tbody//tr",
+    "IpXPath": "//td[1]",
+    "PortXPath": "//td[2]",
+    "LocationXPath": "//td[5]",
+    "IsUnionIpAndPort": false,
+    "NextPageXPath": "//div[@id='listnav']//ul//li//a"
+  },
+  {
+    "Code": "jiangxianli",
+    "Desc": "jiangxianli",
+    "FormatUrl": "http://ip.jiangxianli.com/?page={0}",
+    "FailedKeyWords": "",
+    "MaxPage": 3,
+    "RowXPath": "/html/body/div[1]/div/div[1]/div[2]/table/tbody/tr",
+    "IpXPath": "/td[2]",
+    "PortXPath": "/td[3]",
+    "LocationXPath": "/td[6]",
+    "IsUnionIpAndPort": false,
+    "NextPageXPath": "/html/body/div[1]/div/div[1]/ul/li"
   }
 ]
+//document.evaluate("//div[@id='list']//table//tbody//tr", document, null, XPathResult.ANY_TYPE, null).iterateNext().innerText

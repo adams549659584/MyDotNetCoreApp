@@ -38,14 +38,32 @@ namespace My.App.Core
         /// <typeparam name="T"></typeparam>
         /// <param name="id"></param>
         /// <returns></returns>
-        public async Task<List<T>> GetList<T>(Expression<Func<T, bool>> conditions = null)
+        public async Task<List<T>> GetList<T>(Expression<Func<T, bool>> conditions = null, MongoFindOptions<T> mongoOptions = null)
         {
             var collection = MongoDB.GetCollection<T>(typeof(T).Name);
             if (conditions == null)
             {
                 conditions = _ => true;
             }
-            var result = await collection.FindAsync(conditions);
+            FindOptions<T, T> options = null;
+            if (mongoOptions != null)
+            {
+                options = new FindOptions<T, T>();
+                options.Limit = mongoOptions.Limit;
+                options.Skip = mongoOptions.Skip;
+                if (mongoOptions.SortConditions !=null)
+                {
+                    if (mongoOptions.IsDescending)
+                    {
+                       options.Sort = new SortDefinitionBuilder<T>().Descending(mongoOptions.SortConditions); 
+                    }
+                    else
+                    {
+                        options.Sort = new SortDefinitionBuilder<T>().Ascending(mongoOptions.SortConditions);
+                    }
+                }
+            }
+            var result = await collection.FindAsync(conditions, options);
             return result.ToList();
         }
         #endregion

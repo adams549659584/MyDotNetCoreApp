@@ -59,5 +59,11 @@ namespace My.App.Job
         /// 是否删除
         /// </summary>
         public bool IsDelete { get; set; }
+
+        /// <summary>
+        /// 来源页编码
+        /// </summary>
+        /// <value></value>
+        public string RefererSource { get; set; }
     }
 }
