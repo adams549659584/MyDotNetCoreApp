@@ -84,22 +84,33 @@ namespace My.App.Core
 
         private static async Task<IRestResponse> GetExecuteAsyncRes(string url, Dictionary<string, string> dictHeaders = null, int timeout = 0, IWebProxy proxy = null, Dictionary<string, object> postData = null)
         {
-            var log = new HttpLogEnt()
-            {
-                Id = Guid.NewGuid(),
-                Url = url,
-                ProxyIp = ((WebProxy)proxy).Address.ToString(),
-                StartTime = DateTime.Now
-            };
+            //var log = new HttpLogEnt()
+            //{
+            //    Id = Guid.NewGuid(),
+            //    Url = url,
+            //    ProxyIp = ((WebProxy)proxy).Address.ToString(),
+            //    StartTime = DateTime.Now
+            //};
+            //await MongoDBServiceBase.Insert<HttpLogEnt>(log);
 
-            await MongoDBServiceBase.Insert<HttpLogEnt>(log);
             (var restClient, var restRequest) = InitRestClient(url, dictHeaders, timeout, proxy, Method.GET, postData);
-            var response = await restClient.ExecuteGetTaskAsync(restRequest);
-            response.SetResponseEncoding();
-            log.ResStatusCode = (int)response.StatusCode;
-            log.FinishedTime = DateTime.Now;
-            log.IsFinished = true;
-            MongoDBServiceBase.Replace<HttpLogEnt>(log);
+            var executeTask = restClient.ExecuteGetTaskAsync(restRequest);
+            // 任务超时时间 1 分钟
+            if (!executeTask.Wait(60 * 1000))
+            {
+                //log.ResStatusCode = 444444;
+                //log.FinishedTime = DateTime.Now;
+                //log.IsFinished = true;
+                //MongoDBServiceBase.Replace<HttpLogEnt>(log);
+                throw new Exception("Http 请求超时，Task 无响应");
+            }
+            var response = await executeTask;
+            //var response = await restClient.ExecuteGetTaskAsync(restRequest);
+            //response.SetResponseEncoding();
+            //log.ResStatusCode = (int)response.StatusCode;
+            //log.FinishedTime = DateTime.Now;
+            //log.IsFinished = true;
+            //MongoDBServiceBase.Replace<HttpLogEnt>(log);
 
             if (response.ErrorException != null)
             {
