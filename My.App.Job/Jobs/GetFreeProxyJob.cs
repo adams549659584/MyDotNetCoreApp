@@ -69,7 +69,7 @@ namespace My.App.Job
                 SortConditions = x => x.LastValidTime,
                 IsDescending = true
             };
-            var usefulProxyIpList = await MongoDBServiceBase.GetList<ProxyIpEnt>(x => x.Speed <= 1000, mongoOptions);
+            var usefulProxyIpList = await MongoDBServiceBase.GetList<ProxyIpEnt>(x => x.Speed <= 2 * 1000, mongoOptions);
             var usefulProxyIps = usefulProxyIpList.Select(x => $"{x.IP}:{x.Port}").ToList();
             var proxyConfigFullPath = PathHelper.MapFile("Config", "proxyConfig.jsonc");
             var proxyConfigJson = File.ReadAllText(proxyConfigFullPath);
