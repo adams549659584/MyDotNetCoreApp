@@ -45,5 +45,14 @@ namespace My.App.Job
         public bool IsUnionIpAndPort { get; set; }
 
         public string NextPageXPath { get; set; }
+
+        /// <summary>
+        /// 当前a链接
+        /// </summary>
+        public string CurrentHref { get; set; }
+        /// <summary>
+        /// 链接以href为准
+        /// </summary>
+        public bool IsPageWithHref { get; set; }
     }
 }

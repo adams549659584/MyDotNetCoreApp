@@ -1,5 +1,20 @@
 ﻿[
   {
+    "Code": "ihuan",
+    "Desc": "ihuan代理",
+    "FormatUrl": "https://ip.ihuan.me{0}",
+    "FailedKeyWords": "",
+    "MaxPage": 20,
+    "RowXPath": "//div[2]//div[2]//table//tbody//tr",
+    "IpXPath": "//td[1]//a",
+    "PortXPath": "//td[2]",
+    "LocationXPath": "//td[3]",
+    "IsUnionIpAndPort": false,
+    "NextPageXPath": "//div[2]//nav//ul//li//a",
+    "IsPageWithHref": true,
+    "CurrentHref": ""
+  },
+  {
     "Code": "89ip",
     "Desc": "89ip代理",
     "FormatUrl": "http://www.89ip.cn/index_{0}.html",
@@ -10,7 +25,9 @@
     "PortXPath": "//td[2]",
     "LocationXPath": "//td[3]",
     "IsUnionIpAndPort": false,
-    "NextPageXPath": "//div[@id='layui-laypage-1']//a"
+    "NextPageXPath": "//div[@id='layui-laypage-1']//a",
+    "IsPageWithHref": false,
+    "CurrentHref": ""
   },
   {
     "Code": "xila",
@@ -23,7 +40,9 @@
     "PortXPath": null,
     "LocationXPath": "//td[4]",
     "IsUnionIpAndPort": true,
-    "NextPageXPath": "//html//body//div//div[3]//nav//ul//li//a"
+    "NextPageXPath": "//html//body//div//div[3]//nav//ul//li//a",
+    "IsPageWithHref": false,
+    "CurrentHref": ""
   },
   {
     "Code": "qy",
@@ -36,7 +55,9 @@
     "PortXPath": "//td[2]",
     "LocationXPath": "//td[5]",
     "IsUnionIpAndPort": false,
-    "NextPageXPath": "//section[@id='content']//div[2]//nav//ul//li//a"
+    "NextPageXPath": "//section[@id='content']//div[2]//nav//ul//li//a",
+    "IsPageWithHref": false,
+    "CurrentHref": ""
   },
   {
     "Code": "ip3366",
@@ -49,6 +70,8 @@
     "PortXPath": "//td[2]",
     "LocationXPath": "//td[6]",
     "IsUnionIpAndPort": false,
-    "NextPageXPath": "//div[@id='listnav']//ul//a"
+    "NextPageXPath": "//div[@id='listnav']//ul//a",
+    "IsPageWithHref": false,
+    "CurrentHref": ""
   }
 ]

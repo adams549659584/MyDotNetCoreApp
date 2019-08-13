@@ -56,7 +56,7 @@ namespace My.App.Job
             // LogHelper.Log("抓取免费IP代理作业启动");
         }
 
-        protected override async Task DoWork(object state)
+        protected override Task DoWork(object state)
         {
             //base.Logger.Log(LogLevel.Debug, "测试作业执行：");
             //LogHelper.Log("抓取免费IP代理作业执行：");
@@ -67,146 +67,15 @@ namespace My.App.Job
             var proxyConfigs = string.IsNullOrWhiteSpace(proxyConfigJson) ? new List<ProxyConfigEnt>() : JsonHelper.Deserialize<List<ProxyConfigEnt>>(proxyConfigJson);
             var freeProxyTasks = proxyConfigs.Select(proxy =>
             {
-                return FreeProxyCommon(proxy, 1, usefulProxyIps.Clone());
-            }).ToList();
-            freeProxyTasks.Add(FreeProxyIHuan("", 1, usefulProxyIps.Clone()));
-            Task.WaitAll(freeProxyTasks.ToArray());
-            await ValidProxyIps();
+                return Task.Run(() => FreeProxyCommon(proxy, 1, usefulProxyIps.Clone()));
+            }).ToArray();
+            var timeout = new TimeSpan(1, 0, 0);
+            Task.WaitAll(freeProxyTasks, timeout);
+            ValidProxyIps().Wait(timeout);
             RawProxyIps.Clear();
 
             //TestValidProxyIps();
-        }
-
-        /// <summary>
-        /// https://ip.ihuan.me
-        /// </summary>
-        async Task FreeProxyIHuan(string urlParams = "", int page = 1, List<string> usefulProxyIps = null)
-        {
-            try
-            {
-                var proxyIpMaxPage = DictHelper.GetValue("My.App.Job.GetFreeProxyJob.ProxyIpMaxPage.ihuan").ToInt(5);
-                if (page <= proxyIpMaxPage)
-                {
-                    Console.WriteLine($"抓取免费IP代理作业开始抓取ihuan第{page}页:");
-                    string getIpUrl = $"https://ip.ihuan.me{urlParams}";
-                    string headerFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config", "ihuan_header.txt");
-                    var fileLastWriteTime = File.GetLastWriteTime(headerFilePath);
-                    bool HeaderFileIsExpried = false;
-                    DateTime HeaderFileLastWriteTime = DateTime.MinValue;
-                    if (!HeaderFilesIsExpried.ContainsKey(headerFilePath))
-                    {
-                        lock (HeaderFilesIsExpried)
-                        {
-                            HeaderFilesIsExpried[headerFilePath] = HeaderFileIsExpried;
-                        }
-                    }
-                    if (!HeaderFilesLastWriteTime.ContainsKey(headerFilePath))
-                    {
-                        lock (HeaderFilesLastWriteTime)
-                        {
-                            HeaderFilesLastWriteTime[headerFilePath] = HeaderFileLastWriteTime;
-                        }
-                    }
-                    if (HeaderFileIsExpried && fileLastWriteTime <= HeaderFileLastWriteTime)
-                    {
-                        Console.WriteLine($"抓取免费IP代理作业异常：ihuan cookie 文件头未更新最新，暂不执行作业！");
-                        return;
-                    }
-                    var headerStrs = ReadAllLines(headerFilePath);
-                    var dictHeaders = headerStrs.Select(h => h.Split(new string[] { ": " }, StringSplitOptions.RemoveEmptyEntries)).ToDictionary(x => x[0], x => x[1]);
-                    string ipHtml = string.Empty;
-                    var tempProxyIps = new string[usefulProxyIps.Count];
-                    usefulProxyIps.CopyTo(tempProxyIps);
-                    foreach (var currProxyIp in tempProxyIps)
-                    {
-                        try
-                        {
-                            Console.WriteLine($"抓取免费IP代理作业 ihuan 当前使用代理Ip：{currProxyIp}");
-                            ipHtml = await HttpHelper.GetAsync(getIpUrl, dictHeaders, 10 * 1000, new WebProxy($"http://{currProxyIp}"));
-                            usefulProxyIps.RemoveAll(x => x == currProxyIp);
-                            usefulProxyIps.Insert(0, currProxyIp);
-                            break;
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine($"ihuan 使用代理Ip {currProxyIp} 异常： {ex.Message}");
-                            // Console.WriteLine(ex.ToString());
-                            // LogHelper.Log(ex);
-                        }
-                    }
-                    var htmlDoc = new HtmlDocument();
-                    htmlDoc.LoadHtml(ipHtml);
-                    var ipTrs = htmlDoc.DocumentNode.SelectNodes("//div[2]//div[2]//table//tbody//tr");
-                    if (ipTrs == null)
-                    {
-                        lock (HeaderFilesIsExpried)
-                        {
-                            HeaderFilesIsExpried[headerFilePath] = true;
-                        }
-                        lock (HeaderFilesLastWriteTime)
-                        {
-                            HeaderFilesLastWriteTime[headerFilePath] = fileLastWriteTime;
-                        }
-                        Console.WriteLine("抓取免费IP代理作业 ihuan 异常：");
-                        Console.WriteLine(ipHtml);
-                        NotifyHelper.Weixin("抓取免费IP代理作业 ihuan 异常", new MarkdownBuilder().AppendCode(ipHtml, "html"));
-                        return;
-                    }
-                    foreach (var item in ipTrs)
-                    {
-                        try
-                        {
-                            var ip = item.SelectSingleNode($"{item.XPath}//td[1]//a").InnerText.Trim();
-                            var port = item.SelectSingleNode($"{item.XPath}//td[2]").InnerText.Trim();
-                            var location = item.SelectSingleNode($"{item.XPath}//td[3]").InnerText.Trim();
-                            var proxyType = item.SelectSingleNode($"{item.XPath}//td[5]").InnerText.Trim();
-                            var anonymity = item.SelectSingleNode($"{item.XPath}//td[7]").InnerText.Trim();
-                            var proxyIpEnt = new ProxyIpEnt()
-                            {
-                                Id = Guid.NewGuid(),
-                                IP = ip,
-                                Port = port.ToInt(),
-                                Location = HttpUtility.HtmlDecode(location),
-                                Anonymity = anonymity
-                            };
-                            RawProxyIpList.Add(proxyIpEnt);
-                            Console.WriteLine($"抓取免费IP代理作业 ihuan 抓取到IP:{ip}:{port}");
-                            // RedisHelper.Set(IpProxyCacheKey, $"{ip}:{port}", "1");
-                            RawProxyIps[$"{ip}:{port}"] = false;
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine(ex.ToString());
-                            // LogHelper.Log(ex);
-                        }
-                    }
-                    var pageEles = htmlDoc.DocumentNode.SelectNodes("//div[2]//nav//ul//li//a");
-                    if (pageEles.Count > 1)
-                    {
-                        int nextPage = 0;
-                        string href = "";
-                        for (int i = 1; i < pageEles.Count; i++)
-                        {
-                            href = pageEles[i].GetAttributeValue("href", "");
-                            nextPage = pageEles[i].InnerText.ToInt(nextPage);
-                            if (nextPage > page)
-                            {
-                                break;
-                            }
-                        }
-                        if (nextPage > 0)
-                        {
-                            await FreeProxyIHuan(href, nextPage, usefulProxyIps);
-                            return;
-                        }
-                    }
-                }
-                Console.WriteLine($"抓取免费IP代理作业抓取ihuan结束");
-            }
-            catch (Exception ex)
-            {
-                LogHelper.Log(ex);
-            }
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -221,7 +90,15 @@ namespace My.App.Job
                 if (page <= proxyConfig.MaxPage)
                 {
                     Console.WriteLine($"抓取免费IP代理作业开始抓取{proxyConfigCode}第{page}页:");
-                    string getIpUrl = string.Format(proxyConfig.FormatUrl, page);
+                    string getIpUrl = string.Empty;
+                    if (proxyConfig.IsPageWithHref)
+                    {
+                        getIpUrl = string.Format(proxyConfig.FormatUrl, proxyConfig.CurrentHref);
+                    }
+                    else
+                    {
+                        getIpUrl = string.Format(proxyConfig.FormatUrl, page);
+                    }
                     string headerFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config", $"{proxyConfigCode}_header.txt");
                     var fileLastWriteTime = File.GetLastWriteTime(headerFilePath);
                     bool HeaderFileIsExpried = false;
@@ -337,6 +214,10 @@ namespace My.App.Job
                             nextPage = pageEles[i].InnerText.ToInt(nextPage);
                             if (nextPage > page)
                             {
+                                if (proxyConfig.IsPageWithHref)
+                                {
+                                    proxyConfig.CurrentHref = pageEles[i].GetAttributeValue("href", "").Trim();
+                                }
                                 break;
                             }
                         }
