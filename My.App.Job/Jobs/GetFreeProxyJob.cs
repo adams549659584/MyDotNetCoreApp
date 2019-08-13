@@ -277,18 +277,18 @@ namespace My.App.Job
                     var ipTrs = htmlDoc.DocumentNode.SelectNodes(proxyConfig.RowXPath);
                     if (ipTrs == null)
                     {
-                        if (ipHtml.Contains("高匿ip非国外免费代理服务器"))
-                        {
-                            Console.WriteLine($"抓取免费IP代理作业抓取{proxyConfigCode}结束");
-                        }
-                        else
-                        {
-                            // HeaderFilesIsExpried[headerFilePath] = true;
-                            // HeaderFilesLastWriteTime[headerFilePath] = fileLastWriteTime;
-                            Console.WriteLine($"抓取免费IP代理作业 {proxyConfigCode} 异常：");
-                            Console.WriteLine(ipHtml);
-                            NotifyHelper.Weixin($"抓取免费IP代理作业 {proxyConfigCode} 异常", new MarkdownBuilder().AppendCode(ipHtml, "html"));
-                        }
+                        //if (ipHtml.Contains("高匿ip非国外免费代理服务器"))
+                        //{
+                        //    Console.WriteLine($"抓取免费IP代理作业抓取{proxyConfigCode}结束");
+                        //}
+                        //else
+                        //{
+                        // HeaderFilesIsExpried[headerFilePath] = true;
+                        // HeaderFilesLastWriteTime[headerFilePath] = fileLastWriteTime;
+                        Console.WriteLine($"抓取免费IP代理作业 {proxyConfigCode} 异常：");
+                        Console.WriteLine(ipHtml);
+                        //NotifyHelper.Weixin($"抓取免费IP代理作业 {proxyConfigCode} 异常", new MarkdownBuilder().AppendCode(ipHtml, "html"));
+                        //}
                         return;
                     }
                     foreach (var item in ipTrs)
