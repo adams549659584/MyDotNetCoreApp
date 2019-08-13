@@ -1,8 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Web;
+using System.Net;
 
 namespace My.App.Core
 {
@@ -16,12 +15,20 @@ namespace My.App.Core
         /// <returns></returns>
         public static bool Weixin(string title, string body = "")
         {
-            title = HttpUtility.UrlEncode(title);
-            body = HttpUtility.UrlEncode(body);
-            string url = $"https://sc.ftqq.com/SCU33276T4801adab529b3595e3dc25d37cbe38a35bb5f40021bbd.send?text={title}&desp={body}";
+            string url = $"https://sc.ftqq.com/SCU33276T4801adab529b3595e3dc25d37cbe38a35bb5f40021bbd.send";
             //{"errno":0,"errmsg":"success","dataset":"done"}
             //{"errno":1024,"errmsg":"\u4e0d\u8981\u91cd\u590d\u53d1\u9001\u540c\u6837\u7684\u5185\u5bb9"}
-            var result = HttpHelper.Get(url);
+
+            var postData = new Dictionary<string, object>()
+            {
+                { "text", title },
+                { "desp", body },
+            };
+
+            IWebProxy proxy = null;
+            //debug
+            //proxy = new WebProxy($"http://127.0.0.1:8888");
+            var result = HttpHelper.Post(url, null, 0, proxy, postData);
             var fangTangResult = JsonHelper.Deserialize<FangTangResultView>(result);
             if (fangTangResult.ErrNo != 0)
             {

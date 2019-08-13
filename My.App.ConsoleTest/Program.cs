@@ -14,11 +14,11 @@ namespace My.App.ConsoleTest
         {
             //TestRedisHelper();
             //TestLogHelper();
-            //TestNotifyHelper();
+            TestNotifyHelper();
             //TestUnicodeHelper();
             //TestHttpHelper();
             //TestTask();
-            TestDictHelper();
+            //TestDictHelper();
             //TestMongoDB();
             Console.ReadLine();
         }
@@ -51,7 +51,8 @@ namespace My.App.ConsoleTest
 
         static void TestNotifyHelper()
         {
-            NotifyHelper.Weixin("克拉克订单", "卡的JFK啦奥克兰的放假啊");
+            var kadHtml = HttpHelper.Get("http://m.360kad.com");
+            NotifyHelper.Weixin("测试一下大数据", new MarkdownBuilder().AppendText("康爱多网页", TextStyleType.Heading4).AppendCode(kadHtml, "html"));
         }
 
         static void TestUnicodeHelper()

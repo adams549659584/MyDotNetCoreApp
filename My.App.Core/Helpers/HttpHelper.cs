@@ -11,7 +11,7 @@ namespace My.App.Core
 {
     public class HttpHelper
     {
-        private static (RestClient restClient, RestRequest restRequest) InitRestClient(string url, Dictionary<string, string> dictHeaders, int timeout, IWebProxy proxy, Method method)
+        private static (RestClient restClient, RestRequest restRequest) InitRestClient(string url, Dictionary<string, string> dictHeaders, int timeout, IWebProxy proxy, Method method, Dictionary<string, object> postData)
         {
             var restClient = new RestClient();
             if (timeout > 0)
@@ -35,11 +35,18 @@ namespace My.App.Core
                     }
                 }
             }
+            if (postData != null && postData.Count > 0)
+            {
+                foreach (var key in postData.Keys)
+                {
+                    restRequest.AddParameter(key, postData[key]);
+                }
+            }
             return (restClient, restRequest);
         }
-        private static IRestResponse GetExecuteRes(string url, Dictionary<string, string> dictHeaders = null, int timeout = 0, IWebProxy proxy = null)
+        private static IRestResponse GetExecuteRes(string url, Dictionary<string, string> dictHeaders = null, int timeout = 0, IWebProxy proxy = null, Dictionary<string, object> postData = null)
         {
-            (var restClient, var restRequest) = InitRestClient(url, dictHeaders, timeout, proxy, Method.GET);
+            (var restClient, var restRequest) = InitRestClient(url, dictHeaders, timeout, proxy, Method.GET, postData);
             var response = restClient.Execute(restRequest);
             response.SetResponseEncoding();
             if (response.ErrorException != null)
@@ -52,30 +59,30 @@ namespace My.App.Core
             }
             return response;
         }
-        public static string Get(string url, Dictionary<string, string> dictHeaders = null, int timeout = 0, IWebProxy proxy = null)
+        public static string Get(string url, Dictionary<string, string> dictHeaders = null, int timeout = 0, IWebProxy proxy = null, Dictionary<string, object> postData = null)
         {
-            return GetExecuteRes(url, dictHeaders, timeout, proxy).Content;
+            return GetExecuteRes(url, dictHeaders, timeout, proxy, postData).Content;
         }
-        public static T Get<T>(string url, Dictionary<string, string> dictHeaders = null, int timeout = 0, IWebProxy proxy = null) where T : new()
+        public static T Get<T>(string url, Dictionary<string, string> dictHeaders = null, int timeout = 0, IWebProxy proxy = null, Dictionary<string, object> postData = null) where T : new()
         {
-            (var restClient, var restRequest) = InitRestClient(url, dictHeaders, timeout, proxy, Method.GET);
+            (var restClient, var restRequest) = InitRestClient(url, dictHeaders, timeout, proxy, Method.GET, postData);
             return restClient.Execute<T>(restRequest).Data;
         }
 
-        public static string Post(string url, Dictionary<string, string> dictHeaders = null, int timeout = 0, IWebProxy proxy = null)
+        public static string Post(string url, Dictionary<string, string> dictHeaders = null, int timeout = 0, IWebProxy proxy = null, Dictionary<string, object> postData = null)
         {
-            (var restClient, var restRequest) = InitRestClient(url, dictHeaders, timeout, proxy, Method.POST);
+            (var restClient, var restRequest) = InitRestClient(url, dictHeaders, timeout, proxy, Method.POST, postData);
             return restClient.Execute(restRequest).Content;
         }
-        public static T Post<T>(string url, Dictionary<string, string> dictHeaders = null, int timeout = 0, IWebProxy proxy = null) where T : new()
+        public static T Post<T>(string url, Dictionary<string, string> dictHeaders = null, int timeout = 0, IWebProxy proxy = null, Dictionary<string, object> postData = null) where T : new()
         {
-            (var restClient, var restRequest) = InitRestClient(url, dictHeaders, timeout, proxy, Method.POST);
+            (var restClient, var restRequest) = InitRestClient(url, dictHeaders, timeout, proxy, Method.POST, postData);
             return restClient.Execute<T>(restRequest).Data;
         }
 
 
 
-        private static async Task<IRestResponse> GetExecuteAsyncRes(string url, Dictionary<string, string> dictHeaders = null, int timeout = 0, IWebProxy proxy = null)
+        private static async Task<IRestResponse> GetExecuteAsyncRes(string url, Dictionary<string, string> dictHeaders = null, int timeout = 0, IWebProxy proxy = null, Dictionary<string, object> postData = null)
         {
             var log = new HttpLogEnt()
             {
@@ -86,7 +93,7 @@ namespace My.App.Core
             };
 
             await MongoDBServiceBase.Insert<HttpLogEnt>(log);
-            (var restClient, var restRequest) = InitRestClient(url, dictHeaders, timeout, proxy, Method.GET);
+            (var restClient, var restRequest) = InitRestClient(url, dictHeaders, timeout, proxy, Method.GET, postData);
             var response = await restClient.ExecuteGetTaskAsync(restRequest);
             response.SetResponseEncoding();
             log.ResStatusCode = (int)response.StatusCode;
@@ -106,9 +113,9 @@ namespace My.App.Core
         }
 
         private static MongoDBServiceBase MongoDBServiceBase = new MongoDBServiceBase("MyJob");
-        public static async Task<string> GetAsync(string url, Dictionary<string, string> dictHeaders = null, int timeout = 0, IWebProxy proxy = null)
+        public static async Task<string> GetAsync(string url, Dictionary<string, string> dictHeaders = null, int timeout = 0, IWebProxy proxy = null, Dictionary<string, object> postData = null)
         {
-            var res = await GetExecuteAsyncRes(url, dictHeaders, timeout, proxy);
+            var res = await GetExecuteAsyncRes(url, dictHeaders, timeout, proxy, postData);
             return res.Content;
         }
     }
