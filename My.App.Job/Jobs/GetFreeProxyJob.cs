@@ -62,14 +62,14 @@ namespace My.App.Job
             //LogHelper.Log("抓取免费IP代理作业执行：");
             // var dictProxyIps = RedisHelper.HashGetAll(IpProxyCacheKey);
             // var usefulProxyIps = dictProxyIps.Keys.ToList();
-            var mongoOptions = new MongoFindOptions<ProxyIpEnt>()
+            var mongoFindOptions = new MongoFindOptions<ProxyIpEnt>()
             {
                 Skip = 0,
                 Limit = 100,
                 SortConditions = x => x.LastValidTime,
                 IsDescending = true
             };
-            var usefulProxyIpList = await MongoDBServiceBase.GetList<ProxyIpEnt>(x => x.Speed > 0 && x.Speed <= 2 * 1000, mongoOptions);
+            var usefulProxyIpList = await MongoDBServiceBase.GetList<ProxyIpEnt>(x => x.Speed > 0 && x.Speed <= 2 * 1000, mongoFindOptions);
             var usefulProxyIps = usefulProxyIpList.Select(x => $"{x.IP}:{x.Port}").ToList();
             var proxyConfigFullPath = PathHelper.MapFile("Config", "proxyConfig.jsonc");
             var proxyConfigJson = File.ReadAllText(proxyConfigFullPath);
@@ -426,17 +426,6 @@ namespace My.App.Job
                 }
             }
             return usefulProxyIps;
-        }
-
-        enum ProxyCheckType
-        {
-            Http = 0,
-            Https = 1
-        }
-        class ProxyCheckUrl
-        {
-            public const string HTTP = "http://httpbin.org/ip";
-            public const string HTTPS = "https://httpbin.org/ip";
         }
     }
 }
