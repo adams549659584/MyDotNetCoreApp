@@ -105,6 +105,7 @@ namespace My.App.Core
                 throw new Exception("Http 请求超时，Task 无响应");
             }
             var response = await executeTask;
+            response.SetResponseEncoding();
             //var response = await restClient.ExecuteGetTaskAsync(restRequest);
             //response.SetResponseEncoding();
             //log.ResStatusCode = (int)response.StatusCode;
