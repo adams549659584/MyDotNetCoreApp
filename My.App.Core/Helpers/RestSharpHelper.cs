@@ -4,11 +4,14 @@ using System.IO;
 using System.Text;
 using System.Linq;
 using RestSharp;
+using System.Text.RegularExpressions;
 
 namespace My.App.Core
 {
     public static class RestSharpHelper
     {
+        private static Regex RegexCharset = new Regex("(?<=charset=\").*?(?=\")");
+
         static RestSharpHelper()
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
@@ -28,6 +31,14 @@ namespace My.App.Core
                 if (arr != null)
                 {
                     encoding = arr[1].Trim();
+                }
+                else
+                {
+                    var matchResult = RegexCharset.Match(response.Content);
+                    if (matchResult.Success)
+                    {
+                        encoding = matchResult.Value;
+                    }
                 }
             }
             if (!string.IsNullOrWhiteSpace(encoding))
