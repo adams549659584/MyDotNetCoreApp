@@ -97,7 +97,7 @@ namespace My.App.Job
                 string proxyConfigCode = proxyConfig.Code;
                 if (page <= proxyConfig.MaxPage)
                 {
-                    Console.WriteLine($"抓取免费IP代理作业开始抓取{proxyConfigCode}第{page}页:");
+                    // Console.WriteLine($"抓取免费IP代理作业开始抓取{proxyConfigCode}第{page}页:");
                     string getIpUrl = string.Empty;
                     if (proxyConfig.IsPageWithHref)
                     {
@@ -143,7 +143,7 @@ namespace My.App.Job
                     {
                         try
                         {
-                            Console.WriteLine($"抓取免费IP代理作业 {proxyConfigCode} 当前使用代理Ip：{currProxyIp}");
+                            // Console.WriteLine($"抓取免费IP代理作业 {proxyConfigCode} 当前使用代理Ip：{currProxyIp}");
                             ipHtml = await HttpHelper.GetAsync(getIpUrl, dictHeaders, 10 * 1000, new WebProxy($"http://{currProxyIp}"));
                             if (!string.IsNullOrEmpty(proxyConfig.FailedKeyWords) && ipHtml.Contains(proxyConfig.FailedKeyWords))
                             {
@@ -208,7 +208,7 @@ namespace My.App.Job
                                 RefererSource = proxyConfig.Code
                             };
                             RawProxyIpList.Add(proxyIpEnt);
-                            Console.WriteLine($"抓取免费IP代理作业 {proxyConfigCode} 抓取到IP:{ip}:{port}");
+                            // Console.WriteLine($"抓取免费IP代理作业 {proxyConfigCode} 抓取到IP:{ip}:{port}");
                             // RedisHelper.Set(IpProxyCacheKey, $"{ipAndPort}", "1");
                             RawProxyIps[$"{ip}:{port}"] = false;
                         }
@@ -374,7 +374,7 @@ namespace My.App.Job
                     {
                         RedisHelper.HashSet(IpProxyCacheKey, $"{proxyIpEnt.IP}:{proxyIpEnt.Port}", "0");
                         usefulProxyIps.Add($"{proxyIpEnt.IP}:{proxyIpEnt.Port}");
-                        Console.WriteLine($"代理IP：{proxyIpEnt.IP}:{proxyIpEnt.Port} 通过{checkTypeName}校验");
+                        // Console.WriteLine($"代理IP：{proxyIpEnt.IP}:{proxyIpEnt.Port} 通过{checkTypeName}校验");
                         await MongoDBServiceBase.GetList<ProxyIpEnt>(x => x.IP == proxyIpEnt.IP && x.Port == proxyIpEnt.Port)
                         .ContinueWith(queryResult =>
                         {
@@ -397,7 +397,7 @@ namespace My.App.Job
                                 MongoDBServiceBase.Insert(proxyIpEnt)
                                 .ContinueWith(insertResult =>
                                 {
-                                    Console.WriteLine($"{proxyIpEnt.IP}:{proxyIpEnt.Port}插入mongodb成功");
+                                    // Console.WriteLine($"{proxyIpEnt.IP}:{proxyIpEnt.Port}插入mongodb成功");
                                 });
                             }
                             else
@@ -412,7 +412,7 @@ namespace My.App.Job
                                 MongoDBServiceBase.Replace(proxyIpEnt)
                                 .ContinueWith(replaceResult =>
                                 {
-                                    Console.WriteLine($"{proxyIpEnt.IP}:{proxyIpEnt.Port}更新mongodb成功");
+                                    // Console.WriteLine($"{proxyIpEnt.IP}:{proxyIpEnt.Port}更新mongodb成功");
                                 });
                             }
                         });
@@ -422,7 +422,7 @@ namespace My.App.Job
                 {
                     // Console.WriteLine(ex.Message);
                     // Console.WriteLine(ex.ToString());
-                    Console.WriteLine($"代理IP：{proxyIpEnt.IP}:{proxyIpEnt.Port} 未通过{checkTypeName}校验：{ex.Message}");
+                    // Console.WriteLine($"代理IP：{proxyIpEnt.IP}:{proxyIpEnt.Port} 未通过{checkTypeName}校验：{ex.Message}");
                 }
             }
             return usefulProxyIps;

@@ -110,7 +110,7 @@ namespace My.App.Job
                     if (resultIp.Contains("origin"))
                     {
                         usefulProxyIps.Add($"{proxyIpEnt.IP}:{proxyIpEnt.Port}");
-                        Console.WriteLine($"本次ip池取出代理IP：{proxyIpEnt.IP}:{proxyIpEnt.Port} 通过{checkTypeName}校验");
+                        // Console.WriteLine($"本次ip池取出代理IP：{proxyIpEnt.IP}:{proxyIpEnt.Port} 通过{checkTypeName}校验");
                         switch (proxyCheckType)
                         {
                             case ProxyCheckType.Http:
@@ -131,7 +131,7 @@ namespace My.App.Job
                             MongoDBServiceBase.Insert(proxyIpEnt)
                             .ContinueWith(insertResult =>
                             {
-                                Console.WriteLine($"{proxyIpEnt.IP}:{proxyIpEnt.Port}插入mongodb成功");
+                                // Console.WriteLine($"{proxyIpEnt.IP}:{proxyIpEnt.Port}插入mongodb成功");
                             });
                         }
                         else
@@ -146,7 +146,7 @@ namespace My.App.Job
                             MongoDBServiceBase.Replace(proxyIpEnt)
                             .ContinueWith(replaceResult =>
                             {
-                                Console.WriteLine($"{proxyIpEnt.IP}:{proxyIpEnt.Port}更新mongodb成功");
+                                // Console.WriteLine($"{proxyIpEnt.IP}:{proxyIpEnt.Port}更新mongodb成功");
                             });
                         }
                     }
@@ -155,7 +155,7 @@ namespace My.App.Job
                 {
                     // Console.WriteLine(ex.Message);
                     // Console.WriteLine(ex.ToString());
-                    Console.WriteLine($"本次ip池取出代理IP：{proxyIpEnt.IP}:{proxyIpEnt.Port} 未通过{checkTypeName}校验：{ex.Message}");
+                    // Console.WriteLine($"本次ip池取出代理IP：{proxyIpEnt.IP}:{proxyIpEnt.Port} 未通过{checkTypeName}校验：{ex.Message}");
                     var queryResult = await queryIpTask;
                     if (queryResult.Count > 0)
                     {
@@ -165,7 +165,7 @@ namespace My.App.Job
                         MongoDBServiceBase.Replace(oldProxyIpEnt)
                         .ContinueWith(replaceResult =>
                         {
-                            Console.WriteLine($"{oldProxyIpEnt.IP}:{oldProxyIpEnt.Port}已更新为失效");
+                            // Console.WriteLine($"{oldProxyIpEnt.IP}:{oldProxyIpEnt.Port}已更新为失效");
                         });
                     }
                 }
