@@ -1,4 +1,5 @@
-﻿using MongoDB.Driver;
+﻿using HtmlAgilityPack;
+using MongoDB.Driver;
 using My.App.Core;
 using System;
 using System.Collections.Generic;
@@ -14,12 +15,14 @@ namespace My.App.ConsoleTest
         {
             //TestRedisHelper();
             //TestLogHelper();
-            TestNotifyHelper();
+            // TestNotifyHelper();
             //TestUnicodeHelper();
             //TestHttpHelper();
             //TestTask();
             //TestDictHelper();
             //TestMongoDB();
+            var linkTrees = TestPanDownload();
+            var linkJson = JsonHelper.Serialize(linkTrees);
             Console.ReadLine();
         }
 
@@ -154,6 +157,44 @@ namespace My.App.ConsoleTest
             //mongoDbService.InsertMany<MongoTestEnt>(lists);
             var lists = mongoDbService.GetList<MongoTestEnt>();
         }
+
+        static List<DownloadLinkTree> TestPanDownload(string downloadUrl="https://www.baiduwp.com/s/1-080vZwjwzA9r13wR5sB9A?pwd=hr06&path=%2F网课%2FPython以及其他视频")
+        {
+            string headerFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config", "test_header.txt");
+            var headerStrs = ReadAllLines(headerFilePath);
+            var dictHeaders = headerStrs.Select(h => h.Split(new string[] { ": " }, StringSplitOptions.RemoveEmptyEntries)).ToDictionary(x => x[0], x => x[1]);
+            System.Net.WebProxy proxy = null;//new System.Net.WebProxy($"http://175.44.155.188:9000");
+            var downloadHtml = HttpHelper.Get(downloadUrl, dictHeaders, 30 * 1000, proxy);
+            var htmlDoc = new HtmlDocument();
+            htmlDoc.LoadHtml(downloadHtml);
+            var downloadLinkContainers = htmlDoc.DocumentNode.SelectNodes("/html/body/div[1]/div[1]/ul/li/a");
+            var downloadTrees = new List<DownloadLinkTree>();
+            if (downloadLinkContainers != null && downloadLinkContainers.Count > 0)
+            {
+                foreach (var linkContainer in downloadLinkContainers)
+                {
+                    var downloadLink = linkContainer.GetAttributeValue("href","");
+                    var downloadName = linkContainer.InnerText;
+                    Console.WriteLine($"{downloadName}:{downloadLink}");
+                    var tree = new DownloadLinkTree()
+                    {
+                        Link = downloadLink,
+                        Name = linkContainer.InnerText
+                    };
+                    if (downloadLink.Contains("javascript:void(0)"))
+                    {
+                        downloadLink = linkContainer.GetAttributeValue("onclick","");
+                        downloadLink = downloadLink.Replace("if (!window.__cfRLUnblockHandlers) return false;", "");
+                    }
+                    else
+                    {
+                        tree.Childrens = TestPanDownload($"https://www.baiduwp.com{downloadLink}");
+                    }
+                    downloadTrees.Add(tree);
+                }
+            }
+            return downloadTrees;
+        }
     }
 
     public class MongoTestEnt
@@ -163,5 +204,12 @@ namespace My.App.ConsoleTest
         public string Name { get; set; }
         public int Age { get; set; }
         public DateTime CreateTime { get; set; }
+    }
+
+    public class DownloadLinkTree
+    {
+        public string Link { get; set; }
+        public string Name { get; set; }
+        public List<DownloadLinkTree> Childrens { get; set; }
     }
 }
