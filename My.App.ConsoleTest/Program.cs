@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace My.App.ConsoleTest
 {
@@ -21,8 +22,7 @@ namespace My.App.ConsoleTest
             //TestTask();
             //TestDictHelper();
             //TestMongoDB();
-            var linkTrees = TestPanDownload();
-            var linkJson = JsonHelper.Serialize(linkTrees);
+            TestPanDownload();
             Console.ReadLine();
         }
 
@@ -158,12 +158,18 @@ namespace My.App.ConsoleTest
             var lists = mongoDbService.GetList<MongoTestEnt>();
         }
 
-        static List<DownloadLinkTree> TestPanDownload(string downloadUrl="https://www.baiduwp.com/s/1-080vZwjwzA9r13wR5sB9A?pwd=hr06&path=%2F网课%2FPython以及其他视频")
+        static async void TestPanDownload()
+        {
+            var linkTrees = PanDownloadToAria2("https://www.baiduwp.com/s/1-080vZwjwzA9r13wR5sB9A?pwd=hr06&path=%2F网课%2FPython以及其他视频");
+            var linkJson = JsonHelper.Serialize(linkTrees);
+        }
+
+        static List<DownloadLinkTree> PanDownloadToAria2(string downloadUrl = "https://www.baiduwp.com/s/1-080vZwjwzA9r13wR5sB9A?pwd=hr06&path=%2F网课%2FPython以及其他视频")
         {
             string headerFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config", "test_header.txt");
             var headerStrs = ReadAllLines(headerFilePath);
             var dictHeaders = headerStrs.Select(h => h.Split(new string[] { ": " }, StringSplitOptions.RemoveEmptyEntries)).ToDictionary(x => x[0], x => x[1]);
-            System.Net.WebProxy proxy = null;//new System.Net.WebProxy($"http://175.44.155.188:9000");
+            System.Net.WebProxy proxy = new System.Net.WebProxy($"http://127.0.0.1:8888");
             var downloadHtml = HttpHelper.Get(downloadUrl, dictHeaders, 30 * 1000, proxy);
             var htmlDoc = new HtmlDocument();
             htmlDoc.LoadHtml(downloadHtml);
@@ -173,7 +179,7 @@ namespace My.App.ConsoleTest
             {
                 foreach (var linkContainer in downloadLinkContainers)
                 {
-                    var downloadLink = linkContainer.GetAttributeValue("href","");
+                    var downloadLink = linkContainer.GetAttributeValue("href", "");
                     var downloadName = linkContainer.InnerText;
                     Console.WriteLine($"{downloadName}:{downloadLink}");
                     var tree = new DownloadLinkTree()
@@ -183,12 +189,12 @@ namespace My.App.ConsoleTest
                     };
                     if (downloadLink.Contains("javascript:void(0)"))
                     {
-                        downloadLink = linkContainer.GetAttributeValue("onclick","");
+                        downloadLink = linkContainer.GetAttributeValue("onclick", "");
                         downloadLink = downloadLink.Replace("if (!window.__cfRLUnblockHandlers) return false;", "");
                     }
                     else
                     {
-                        tree.Childrens = TestPanDownload($"https://www.baiduwp.com{downloadLink}");
+                        tree.Childrens = PanDownloadToAria2($"https://www.baiduwp.com{downloadLink}");
                     }
                     downloadTrees.Add(tree);
                 }

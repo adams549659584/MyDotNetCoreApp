@@ -51,7 +51,7 @@ namespace My.App.Core
 
         public RedisHelper()
         {
-            this._configuration = "dotnetcore_redis:6379";
+            this._configuration = "dotnetcore_redis:6379,abortConnect=false";
         }
 
         public RedisHelper(string configuration)

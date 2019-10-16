@@ -11,7 +11,7 @@ namespace My.App.Job
     public class IpPushJob : BaseJob
     {
         private static TimeSpan JobTimerInterval = TimeSpan.FromMinutes(30);
-        private static RedisHelper RedisHelper = new RedisHelper("dotnetcore_redis:6379");
+        private static RedisHelper RedisHelper = new RedisHelper("dotnetcore_redis:6379,abortConnect=false");
         public IpPushJob(ILogger<BaseJob> logger, IHostApplicationLifetime appLifetime) : base(JobTimerInterval, logger, appLifetime)
         {
             //base.Logger.Log(LogLevel.Debug, "测试作业启动");

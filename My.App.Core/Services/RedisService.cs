@@ -40,7 +40,7 @@ namespace My.App.Core
 
         public RedisService()
         {
-            this.Configuration = "dotnetcore_redis:6379";
+            this.Configuration = "dotnetcore_redis:6379,abortConnect=false";
         }
         public RedisService(string configuration)
         {
