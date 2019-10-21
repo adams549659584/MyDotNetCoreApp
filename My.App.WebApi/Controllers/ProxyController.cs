@@ -10,7 +10,7 @@ using My.App.Core;
 namespace My.App.WebApi.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class ProxyController : ControllerBase
     {
         private readonly ILogger<ProxyController> _logger;
