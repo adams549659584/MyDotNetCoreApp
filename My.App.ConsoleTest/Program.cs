@@ -22,7 +22,8 @@ namespace My.App.ConsoleTest
             //TestTask();
             //TestDictHelper();
             //TestMongoDB();
-            TestPanDownload();
+            // TestPanDownload();
+            TestML();
             Console.ReadLine();
         }
 
@@ -200,6 +201,24 @@ namespace My.App.ConsoleTest
                 }
             }
             return downloadTrees;
+        }
+
+       static void TestML() 
+        {
+            try
+            {
+                string headerFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config", "test_header.txt");
+                var headerStrs = ReadAllLines(headerFilePath);
+                var dictHeaders = headerStrs.Select(h => h.Split(new string[] { ": " }, StringSplitOptions.RemoveEmptyEntries)).ToDictionary(x => x[0], x => x[1]);
+                var proxyIp = "210.22.247.196:8090";
+                // var proxyIp = "192.168.124.10:8090";
+                var result = HttpHelper.Get("http://httpbin.org/ip", dictHeaders, 5 * 1000, new System.Net.WebProxy($"http://{proxyIp}"));
+                Console.WriteLine($"{proxyIp}:{result}");
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
     }
 
